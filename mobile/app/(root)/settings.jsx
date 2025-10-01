@@ -1,0 +1,191 @@
+import React, { useState } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert, Share } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { COLORS } from "@/constants/colors";
+import { router } from "expo-router";
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+export default function SettingsScreen() {
+  const { signOut } = useAuth();
+  const { user } = useUser();
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true); // Placeholder for notification state
+
+  const handleExportTransactions = async () => {
+    if (!user?.id) {
+      Alert.alert("Error", "User not authenticated.");
+      return;
+    }
+    try {
+      const response = await fetch(`${API_URL}/transactions/export/${user.id}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const csvData = await response.text();
+
+      // Using React Native Share API for simplicity
+      await Share.share({
+        message: "Here are your transactions in CSV format.",
+        url: `data:text/csv;charset=utf-8,${encodeURIComponent(csvData)}`,
+        title: "Export Transactions to CSV",
+      });
+
+    } catch (err) {
+      console.error("Error exporting transactions:", err);
+      Alert.alert("Error", err.message || "Failed to export transactions. Please try again.");
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.replace("/sign-in"); // Redirect to sign-in page after logout
+    } catch (err) {
+      console.error("Error logging out:", err);
+      Alert.alert("Error", "Failed to log out. Please try again.");
+    }
+  };
+
+  return (
+    <SafeAreaView style={settingsStyles.container}>
+      <View style={settingsStyles.header}>
+        <Text style={settingsStyles.headerTitle}>Settings</Text>
+      </View>
+
+      <View style={settingsStyles.section}>
+        <Text style={settingsStyles.sectionTitle}>GENERAL</Text>
+        <View style={settingsStyles.optionsCard}>
+          <TouchableOpacity style={settingsStyles.optionItem} onPress={() => Alert.alert("Profile", "Navigate to Profile Screen")}>
+            <View style={settingsStyles.optionLeft}>
+              <Ionicons name="person-outline" size={24} color={COLORS.primary} />
+              <Text style={settingsStyles.optionText}>Profile</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+          </TouchableOpacity>
+          <TouchableOpacity style={settingsStyles.optionItem} onPress={() => Alert.alert("Theme", "Navigate to Theme Settings")}>
+            <View style={settingsStyles.optionLeft}>
+              <Ionicons name="color-palette-outline" size={24} color={COLORS.primary} />
+              <Text style={settingsStyles.optionText}>Theme</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+          </TouchableOpacity>
+          <View style={settingsStyles.optionItemNoBorder}>
+            <View style={settingsStyles.optionLeft}>
+              <Ionicons name="notifications-outline" size={24} color={COLORS.primary} />
+              <Text style={settingsStyles.optionText}>Notifications</Text>
+            </View>
+            <Switch
+              trackColor={{ false: COLORS.border, true: COLORS.primary }}
+              thumbColor={notificationsEnabled ? COLORS.white : COLORS.white}
+              ios_backgroundColor={COLORS.border}
+              onValueChange={() => setNotificationsEnabled(previousState => !previousState)}
+              value={notificationsEnabled}
+            />
+          </View>
+        </View>
+      </View>
+
+      <View style={settingsStyles.section}>
+        <Text style={settingsStyles.sectionTitle}>DATA MANAGEMENT</Text>
+        <View style={settingsStyles.optionsCard}>
+          <TouchableOpacity style={settingsStyles.optionItemNoBorder} onPress={handleExportTransactions}>
+            <View style={settingsStyles.optionLeft}>
+              <MaterialCommunityIcons name="download-box-outline" size={24} color={COLORS.primary} />
+              <Text style={settingsStyles.optionText}>Export Transactions to CSV</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <View style={settingsStyles.spacer} />
+
+      <TouchableOpacity style={settingsStyles.logoutButton} onPress={handleLogout}>
+        <MaterialCommunityIcons name="logout" size={24} color={COLORS.expense} />
+        <Text style={settingsStyles.logoutButtonText}>Log Out</Text>
+      </TouchableOpacity>
+    </SafeAreaView>
+  );
+}
+
+const settingsStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+    padding: 20,
+  },
+  header: {
+    marginBottom: 30,
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: COLORS.text,
+  },
+  section: {
+    marginBottom: 25,
+  },
+  sectionTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.textLight,
+    marginBottom: 10,
+    paddingLeft: 5,
+  },
+  optionsCard: {
+    backgroundColor: COLORS.card,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    overflow: "hidden",
+    shadowColor: COLORS.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  optionItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: COLORS.border,
+  },
+  optionItemNoBorder: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingVertical: 15,
+    paddingHorizontal: 15,
+  },
+  optionLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 15,
+  },
+  optionText: {
+    fontSize: 16,
+    color: COLORS.text,
+  },
+  spacer: {
+    flex: 1,
+  },
+  logoutButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.expense + "20", // 20% opacity
+    padding: 15,
+    borderRadius: 15,
+    gap: 10,
+  },
+  logoutButtonText: {
+    color: COLORS.expense,
+    fontSize: 18,
+    fontWeight: "700",
+  },
+});

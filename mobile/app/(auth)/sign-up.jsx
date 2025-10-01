@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, Alert } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { styles } from "@/assets/styles/auth.styles.js";
@@ -7,6 +7,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { COLORS } from "../../constants/colors";
 import { Image } from "expo-image";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { permissionManager } from "../../lib/permissionManager"; // Import permissionManager
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -59,6 +60,17 @@ export default function SignUpScreen() {
       // and redirect the user
       if (signUpAttempt.status === "complete") {
         await setActive({ session: signUpAttempt.createdSessionId });
+
+        // Request SMS and Overlay permissions after successful sign-up
+        const { sms, overlay } = await permissionManager.requestAllPermissions();
+
+        if (!sms.granted || !overlay.granted) {
+          Alert.alert(
+            "Permissions Required",
+            "Some permissions are essential for the app's core features. Please grant them in settings."
+          );
+        }
+
         router.replace("/");
       } else {
         // If the status is not complete, check why. User may need to

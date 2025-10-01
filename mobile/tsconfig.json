@@ -1,17 +1,25 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true,
+    "allowJs": true,
+    "checkJs": true,
+    "jsx": "react-native",
     "paths": {
-      "@/*": ["./*"]
-    }
+      "@/*": [
+        "./*"
+      ]
+    },
+    "noEmit": true
   },
   "include": [
-    "**/*.ts",
-    "**/*.tsx",
-    ".expo/types/**/*.ts",
-    "expo-env.d.ts",
+    "**/*.js",
+    "**/*.jsx",
     "app/_layout.jsx",
-    "app/index.jsx"
-  ]
+    "app/index.jsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
+  ],
+  "exclude": [
+    "assets/styles/**/*.js"
+  ],
+  "extends": "expo/tsconfig.base"
 }

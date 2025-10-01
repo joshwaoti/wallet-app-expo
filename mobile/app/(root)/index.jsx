@@ -10,11 +10,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
 import NoTransactionsFound from "../../components/NoTransactionsFound";
+import { smsMonitorService } from "../../lib/SMSMonitorService";
+import { permissionManager } from "../../lib/permissionManager";
+import { getSMSSettings } from "../../lib/storage";
 
 export default function Page() {
   const { user } = useUser();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
+  const [isSmsMonitoringEnabled, setIsSmsMonitoringEnabled] = useState(false);
+  const [smsPermissionGranted, setSmsPermissionGranted] = useState(false);
 
   const { transactions, summary, isLoading, loadData, deleteTransaction } = useTransactions(
     user.id
@@ -23,11 +28,30 @@ export default function Page() {
   const onRefresh = async () => {
     setRefreshing(true);
     await loadData();
+    await updateSmsStatus();
     setRefreshing(false);
+  };
+
+  const updateSmsStatus = async () => {
+    const settings = await getSMSSettings();
+    setIsSmsMonitoringEnabled(settings?.enabled || false);
+
+    const permissionState = await permissionManager.getPermissionState();
+    setSmsPermissionGranted(permissionState.smsPermission === 'granted');
   };
 
   useEffect(() => {
     loadData();
+    updateSmsStatus();
+    // Add listener for permission changes to update UI
+    const listener = (state) => {
+      setSmsPermissionGranted(state.smsPermission === 'granted');
+    };
+    permissionManager.addPermissionChangeListener(listener);
+
+    return () => {
+      permissionManager.removePermissionChangeListener(listener);
+    };
   }, [loadData]);
 
   const handleDelete = (id) => {
@@ -60,6 +84,11 @@ export default function Page() {
           </View>
           {/* RIGHT */}
           <View style={styles.headerRight}>
+            {isSmsMonitoringEnabled && smsPermissionGranted ? (
+              <Ionicons name="checkmark-circle" size={24} color="green" style={{ marginRight: 10 }} />
+            ) : (
+              <Ionicons name="warning-outline" size={24} color="orange" style={{ marginRight: 10 }} />
+            )}
             <TouchableOpacity style={styles.addButton} onPress={() => router.push("/create")}>
               <Ionicons name="add" size={20} color="#FFF" />
               <Text style={styles.addButtonText}>Add</Text>

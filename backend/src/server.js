@@ -4,6 +4,9 @@ import { initDB } from "./config/db.js";
 import rateLimiter from "./middleware/rateLimiter.js";
 
 import transactionsRoute from "./routes/transactionsRoute.js";
+import accountsRoute from "./routes/accountsRoute.js";
+import budgetsRoute from "./routes/budgetsRoute.js";
+import statisticsRoute from "./routes/statisticsRoute.js";
 import job from "./config/cron.js";
 
 dotenv.config();
@@ -29,6 +32,9 @@ app.get("/api/health", (req, res) => {
 });
 
 app.use("/api/transactions", transactionsRoute);
+app.use("/api/accounts", accountsRoute);
+app.use("/api/budgets", budgetsRoute);
+app.use("/api/statistics", statisticsRoute);
 
 initDB().then(() => {
   app.listen(PORT, () => {

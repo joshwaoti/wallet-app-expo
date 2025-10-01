@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Expense Tracker App Screens</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#8B593E",
+                        "background-light": "#FFF8F3",
+                        "background-dark": "#1A1A1A",
+                        "text-light": "#4A3428",
+                        "text-dark": "#E5E5E5",
+                        "income": "#2ECC71",
+                        "expense": "#E74C3C",
+                        "card-light": "rgba(255, 255, 255, 0.6)",
+                        "card-dark": "rgba(40, 40, 40, 0.6)",
+                    },
+                    fontFamily: {
+                        display: ["Poppins", "sans-serif"],
+                    },
+                    borderRadius: {
+                        DEFAULT: "1.25rem", // 20px
+                    },
+                    boxShadow: {
+                        'neon-green': '0 0 5px #2ECC71, 0 0 10px #2ECC71, 0 0 15px #2ECC71',
+                        'neon-red': '0 0 5px #E74C3C, 0 0 10px #E74C3C, 0 0 15px #E74C3C',
+                        'neon-primary': '0 0 5px #8B593E, 0 0 10px #8B593E, 0 0 15px #8B593E',
+                    }
+                },
+            },
+        };
+    </script>
+<style>
+        .glassmorphic {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .liquid-glass-bar {
+            position: relative;
+            overflow: hidden;
+        }
+        .liquid-glass-bar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.3), rgba(255,255,255,0.1));
+            z-index: 1;
+        }
+        .liquid-glass-line {
+            filter: drop-shadow(0 0 5px #E74C3C);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-gray-200 dark:bg-gray-800 font-display flex flex-wrap items-start justify-center gap-8 p-8 relative min-h-screen">
+
+<!-- Floating Action Button -->
+<button class="fixed bottom-8 right-8 z-50 bg-primary text-white rounded-full w-16 h-16 flex items-center justify-center shadow-2xl shadow-neon-primary hover:scale-110 transition-transform duration-300">
+    <span class="material-icons text-3xl">add</span>
+</button>
+
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col">
+<div class="flex justify-between items-center mb-6 px-2">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Statistics</h1>
+<div class="text-sm bg-gray-200 dark:bg-gray-700 text-text-light dark:text-text-dark px-3 py-1 rounded-full">
+                    This Month <span class="material-icons text-sm">expand_more</span>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark glassmorphic p-4 rounded-DEFAULT border border-white/20 mb-6">
+<div class="flex justify-around">
+<div class="text-center">
+<p class="text-sm text-text-light dark:text-text-dark opacity-70">Total Income</p>
+<p class="text-2xl font-bold text-income">$5,250.00</p>
+</div>
+<div class="text-center">
+<p class="text-sm text-text-light dark:text-text-dark opacity-70">Total Expenses</p>
+<p class="text-2xl font-bold text-expense">$1,890.45</p>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark glassmorphic p-4 rounded-DEFAULT border border-white/20 mb-6 flex-grow">
+<h2 class="text-lg font-semibold text-text-light dark:text-text-dark mb-4">Spending by Category</h2>
+<div class="h-48 flex justify-around items-end gap-3 px-2">
+<div class="flex flex-col items-center h-full justify-end w-1/4">
+<div class="w-8 h-[70%] bg-primary rounded-t-lg liquid-glass-bar shadow-neon-primary"></div>
+<p class="text-xs text-text-light dark:text-text-dark mt-2">Food</p>
+</div>
+<div class="flex flex-col items-center h-full justify-end w-1/4">
+<div class="w-8 h-[90%] bg-amber-600 rounded-t-lg liquid-glass-bar shadow-[0_0_15px_#d97706]"></div>
+<p class="text-xs text-text-light dark:text-text-dark mt-2">Shopping</p>
+</div>
+<div class="flex flex-col items-center h-full justify-end w-1/4">
+<div class="w-8 h-[40%] bg-orange-400 rounded-t-lg liquid-glass-bar shadow-[0_0_15px_#fb923c]"></div>
+<p class="text-xs text-text-light dark:text-text-dark mt-2">Transport</p>
+</div>
+<div class="flex flex-col items-center h-full justify-end w-1/4">
+<div class="w-8 h-[60%] bg-yellow-600 rounded-t-lg liquid-glass-bar shadow-[0_0_15px_#ca8a04]"></div>
+<p class="text-xs text-text-light dark:text-text-dark mt-2">Bills</p>
+</div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark glassmorphic p-4 rounded-DEFAULT border border-white/20">
+<h2 class="text-lg font-semibold text-text-light dark:text-text-dark mb-2">Expense History</h2>
+<svg class="w-full h-24" preserveAspectRatio="none" viewBox="0 0 100 30">
+<path class="liquid-glass-line" d="M 0 20 C 10 10, 20 25, 30 15 S 50 5, 60 18 S 80 28, 100 10" fill="none" stroke="#E74C3C" stroke-width="1.5"></path>
+</svg>
+</div>
+</div>
+</div>
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col">
+<div class="flex justify-between items-center mb-6 px-2">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">My Accounts</h1>
+<button class="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-1">
+<span class="material-icons text-xl">add</span>
+<span>Add New</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT flex items-center justify-between border border-white/10">
+<div class="flex items-center gap-4">
+<div class="bg-gray-200 dark:bg-gray-700 p-3 rounded-full">
+<span class="material-icons text-primary">account_balance</span>
+</div>
+<div>
+<p class="font-semibold text-text-light dark:text-text-dark">Checking Account</p>
+<p class="text-xs text-text-light dark:text-text-dark opacity-70">Bank</p>
+</div>
+</div>
+<p class="font-bold text-lg text-text-light dark:text-text-dark">$4,321.56</p>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT flex items-center justify-between border border-white/10">
+<div class="flex items-center gap-4">
+<div class="bg-gray-200 dark:bg-gray-700 p-3 rounded-full">
+<span class="material-icons text-primary">credit_card</span>
+</div>
+<div>
+<p class="font-semibold text-text-light dark:text-text-dark">Visa Card</p>
+<p class="text-xs text-text-light dark:text-text-dark opacity-70">Card</p>
+</div>
+</div>
+<p class="font-bold text-lg text-text-light dark:text-text-dark">$1,023.90</p>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT flex items-center justify-between border border-white/10">
+<div class="flex items-center gap-4">
+<div class="bg-gray-200 dark:bg-gray-700 p-3 rounded-full">
+<span class="material-icons text-primary">payments</span>
+</div>
+<div>
+<p class="font-semibold text-text-light dark:text-text-dark">Cash</p>
+<p class="text-xs text-text-light dark:text-text-dark opacity-70">Cash</p>
+</div>
+</div>
+<p class="font-bold text-lg text-text-light dark:text-text-dark">$345.00</p>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col">
+<div class="text-center mb-6">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Assets &amp; Liabilities</h1>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-6 rounded-DEFAULT text-center mb-8 border border-white/10">
+<p class="text-sm text-text-light dark:text-text-dark opacity-70">Net Worth</p>
+<p class="text-4xl font-bold text-text-light dark:text-text-dark my-2">$63,890.11</p>
+<div class="flex justify-around mt-4">
+<div>
+<p class="text-xs text-text-light dark:text-text-dark opacity-70">Total Assets</p>
+<p class="font-semibold text-income">$75,000.00</p>
+</div>
+<div>
+<p class="text-xs text-text-light dark:text-text-dark opacity-70">Total Liabilities</p>
+<p class="font-semibold text-expense">$11,109.89</p>
+</div>
+</div>
+</div>
+<div class="mb-6">
+<div class="flex justify-between items-center mb-3 px-2">
+<h2 class="text-xl font-semibold text-text-light dark:text-text-dark">Assets</h2>
+<button class="bg-primary/20 text-primary px-3 py-1 rounded-md text-sm font-medium">Add</button>
+</div>
+<div class="space-y-3">
+<div class="bg-gray-200/50 dark:bg-gray-800/50 p-3 rounded-lg flex justify-between items-center">
+<p class="text-text-light dark:text-text-dark">Real Estate</p>
+<p class="font-semibold text-text-light dark:text-text-dark">$60,000.00</p>
+</div>
+<div class="bg-gray-200/50 dark:bg-gray-800/50 p-3 rounded-lg flex justify-between items-center">
+<p class="text-text-light dark:text-text-dark">Stocks</p>
+<p class="font-semibold text-text-light dark:text-text-dark">$15,000.00</p>
+</div>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-center mb-3 px-2">
+<h2 class="text-xl font-semibold text-text-light dark:text-text-dark">Liabilities</h2>
+<button class="bg-primary/20 text-primary px-3 py-1 rounded-md text-sm font-medium">Add</button>
+</div>
+<div class="space-y-3">
+<div class="bg-gray-200/50 dark:bg-gray-800/50 p-3 rounded-lg flex justify-between items-center">
+<p class="text-text-light dark:text-text-dark">Student Loan</p>
+<p class="font-semibold text-text-light dark:text-text-dark">$11,109.89</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col">
+<div class="text-center mb-6">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Settings</h1>
+</div>
+<div class="mb-8">
+<h3 class="text-sm font-semibold text-text-light/70 dark:text-text-dark/70 px-4 mb-2">GENERAL</h3>
+<div class="bg-card-light dark:bg-card-dark rounded-lg border border-white/10">
+<div class="flex items-center justify-between p-4 border-b border-gray-300/50 dark:border-gray-600/50">
+<div class="flex items-center gap-4">
+<span class="material-icons text-primary">person_outline</span>
+<span class="text-text-light dark:text-text-dark">Profile</span>
+</div>
+<span class="material-icons text-text-light/50 dark:text-text-dark/50">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4 border-b border-gray-300/50 dark:border-gray-600/50">
+<div class="flex items-center gap-4">
+<span class="material-icons text-primary">color_lens_outline</span>
+<span class="text-text-light dark:text-text-dark">Theme</span>
+</div>
+<span class="material-icons text-text-light/50 dark:text-text-dark/50">chevron_right</span>
+</div>
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<span class="material-icons text-primary">notifications_none</span>
+<span class="text-text-light dark:text-text-dark">Notifications</span>
+</div>
+<div class="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in">
+<input class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer" id="toggle" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-600 cursor-pointer" for="toggle"></label>
+</div>
+</div>
+</div>
+</div>
+<div class="mb-8">
+<h3 class="text-sm font-semibold text-text-light/70 dark:text-text-dark/70 px-4 mb-2">DATA MANAGEMENT</h3>
+<div class="bg-card-light dark:bg-card-dark rounded-lg border border-white/10">
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-4">
+<span class="material-icons text-primary">download_for_offline</span>
+<span class="text-text-light dark:text-text-dark">Export Transactions to CSV</span>
+</div>
+<span class="material-icons text-text-light/50 dark:text-text-dark/50">chevron_right</span>
+</div>
+</div>
+</div>
+<div class="flex-grow"></div>
+<div class="flex justify-center">
+<button class="w-full bg-expense/20 text-expense font-semibold py-3 rounded-lg flex items-center justify-center gap-2">
+<span class="material-icons">logout</span>
+                    Log Out
+                 </button>
+</div>
+</div>
+</div>
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col justify-end relative bg-cover bg-center" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAz8DdR6ka30wRP3uIx7-ASIiXBT0_GfZn3Ke5oKj51JaRi1EEh9iT-e999G_Q5kkcAP-DPH--mwigq1JfLyviki9Jlg4yztd3E1EAbVNWKyH0S2ank9L38DONijpARW45rCYRw4RIs-BMcLGXm8xy5HeOXaEUTedkvx-U7pyLi236UQzWM0T1sKN6BVaPHvNG4OOTBzeXwBOI0BcKNSjS8El40zzSFZtCxGt4wtCNUPcg5I018D-GxG5j1t6xLVIvHniyHPRSP-Tg');">
+<div class="absolute inset-0 bg-black/30"></div>
+<div class="relative bg-background-light dark:bg-background-dark p-5 rounded-t-3xl shadow-2xl animate-slide-up">
+<h2 class="text-xl font-bold text-center text-text-light dark:text-text-dark mb-4">New Transaction Detected</h2>
+<div class="text-center mb-4">
+<p class="text-sm text-text-light/70 dark:text-text-dark/70">from "AMAZON.COM"</p>
+<p class="text-3xl font-bold text-expense">-$49.99</p>
+</div>
+<div class="mb-4">
+<label class="text-sm font-medium text-text-light dark:text-text-dark" for="title">Transaction Title</label>
+<input class="w-full mt-1 bg-gray-200/50 dark:bg-gray-800/50 border-gray-300 dark:border-gray-700 rounded-md focus:ring-primary focus:border-primary text-text-light dark:text-text-dark" id="title" type="text" value="New Headphones"/>
+</div>
+<div class="mb-6">
+<label class="text-sm font-medium text-text-light dark:text-text-dark">Category</label>
+<div class="flex flex-wrap gap-2 mt-2">
+<button class="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm">Shopping</button>
+<button class="bg-gray-200/80 dark:bg-gray-700/80 text-text-light dark:text-text-dark px-3 py-1 rounded-full text-sm">Bills</button>
+<button class="bg-gray-200/80 dark:bg-gray-700/80 text-text-light dark:text-text-dark px-3 py-1 rounded-full text-sm">Entertainment</button>
+</div>
+</div>
+<div class="flex flex-col gap-3">
+<button class="w-full bg-primary text-white font-semibold py-3 rounded-lg">Add Transaction</button>
+<button class="w-full text-text-light/70 dark:text-text-dark/70 font-semibold py-2 rounded-lg">Dismiss</button>
+</div>
+</div>
+</div>
+</div>
+<div class="w-full max-w-sm mx-auto bg-background-light dark:bg-background-dark rounded-3xl shadow-lg overflow-hidden border-4 border-gray-900 dark:border-gray-700">
+<div class="h-[800px] p-4 flex flex-col">
+<div class="flex justify-between items-center mb-6 px-2">
+<h1 class="text-2xl font-bold text-text-light dark:text-text-dark">Budgets</h1>
+<button class="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-1">
+<span class="material-icons text-xl">add</span>
+<span>Add Budget</span>
+</button>
+</div>
+<div class="space-y-4">
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT border border-white/10">
+<div class="flex justify-between items-center mb-2">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">shopping_bag</span>
+<span class="font-semibold text-text-light dark:text-text-dark">Shopping</span>
+</div>
+<p class="text-sm text-text-light dark:text-text-dark">$350.50 / <span class="opacity-70">$500</span></p>
+</div>
+<div class="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2.5">
+<div class="bg-green-500 h-2.5 rounded-full" style="width: 70%"></div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT border border-white/10">
+<div class="flex justify-between items-center mb-2">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">fastfood</span>
+<span class="font-semibold text-text-light dark:text-text-dark">Food &amp; Drinks</span>
+</div>
+<p class="text-sm text-text-light dark:text-text-dark">$380.20 / <span class="opacity-70">$400</span></p>
+</div>
+<div class="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2.5">
+<div class="bg-yellow-500 h-2.5 rounded-full" style="width: 95%"></div>
+</div>
+</div>
+<div class="bg-card-light dark:bg-card-dark p-4 rounded-DEFAULT border border-white/10">
+<div class="flex justify-between items-center mb-2">
+<div class="flex items-center gap-2">
+<span class="material-icons text-primary">receipt_long</span>
+<span class="font-semibold text-text-light dark:text-text-dark">Bills</span>
+</div>
+<p class="text-sm text-text-light dark:text-text-dark">$250.00 / <span class="opacity-70">$250</span></p>
+</div>
+<div class="w-full bg-gray-300 dark:bg-gray-700 rounded-full h-2.5">
+<div class="bg-expense h-2.5 rounded-full" style="width: 100%"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<style>
+      .toggle-checkbox:checked {
+        right: 0;
+        border-color: #8B593E;
+      }
+      .toggle-checkbox:checked + .toggle-label {
+        background-color: #8B593E;
+      }
+      @keyframes slide-up {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+      }
+      .animate-slide-up {
+        animation: slide-up 0.5s ease-out forwards;
+      }
+    </style>
+
+</body></html>

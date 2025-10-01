@@ -4,16 +4,16 @@ import {
   Alert,
   TouchableOpacity,
   TextInput,
-  ActivityIndicatorBase,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { API_URL } from "../../constants/api";
 import { styles } from "../../assets/styles/create.styles";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import { Picker } from "@react-native-picker/picker";
 
 const CATEGORIES = [
   { id: "food", name: "Food & Drinks", icon: "fast-food" },
@@ -32,8 +32,36 @@ const CreateScreen = () => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [accounts, setAccounts] = useState([]);
   const [isExpense, setIsExpense] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [accountsLoading, setAccountsLoading] = useState(true);
+  const [accountsError, setAccountsError] = useState(null);
+
+  useEffect(() => {
+    fetchAccounts();
+  }, [user]);
+
+  const fetchAccounts = async () => {
+    if (!user?.id) return;
+    setAccountsLoading(true);
+    setAccountsError(null);
+    try {
+      const response = await fetch(`${API_URL}/accounts/${user.id}`);
+      const data = await response.json();
+      setAccounts(data);
+      if (data.length > 0) {
+        setSelectedAccount(data[0].id); // Select the first account by default
+      }
+    } catch (err) {
+      console.error("Error fetching accounts:", err);
+      setAccountsError("Failed to load accounts. Please try again.");
+      Alert.alert("Error", "Failed to load accounts for transaction. Please try again.");
+    } finally {
+      setAccountsLoading(false);
+    }
+  };
 
   const handleCreate = async () => {
     // validations
@@ -44,6 +72,7 @@ const CreateScreen = () => {
     }
 
     if (!selectedCategory) return Alert.alert("Error", "Please select a category");
+    if (!selectedAccount) return Alert.alert("Error", "Please select an account");
 
     setIsLoading(true);
     try {
@@ -59,16 +88,19 @@ const CreateScreen = () => {
         },
         body: JSON.stringify({
           user_id: user.id,
+          email: user.primaryEmailAddress?.emailAddress,
+          name: user.fullName || user.username,
           title,
           amount: formattedAmount,
           category: selectedCategory,
+          account_id: selectedAccount,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        throw new Error(errorData.error || "Failed to create transaction");
+        throw new Error(errorData.message || "Failed to create transaction");
       }
 
       Alert.alert("Success", "Transaction created successfully");
@@ -92,7 +124,7 @@ const CreateScreen = () => {
         <TouchableOpacity
           style={[styles.saveButtonContainer, isLoading && styles.saveButtonDisabled]}
           onPress={handleCreate}
-          disabled={isLoading}
+          disabled={isLoading || accountsLoading}
         >
           <Text style={styles.saveButton}>{isLoading ? "Saving..." : "Save"}</Text>
           {!isLoading && <Ionicons name="checkmark" size={18} color={COLORS.primary} />}
@@ -196,6 +228,33 @@ const CreateScreen = () => {
             </TouchableOpacity>
           ))}
         </View>
+
+        {/* ACCOUNT SELECTOR */}
+        {accountsLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="small" color={COLORS.primary} />
+            <Text style={{ color: COLORS.textLight, marginTop: 5 }}>Loading accounts...</Text>
+          </View>
+        ) : accountsError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorText}>Error loading accounts.</Text>
+          </View>
+        ) : (accounts.length > 0 && (
+          <View style={styles.inputContainer}>
+            <Ionicons name="wallet-outline" size={22} color={COLORS.textLight} style={styles.inputIcon} />
+            <Picker
+              selectedValue={selectedAccount}
+              onValueChange={(itemValue) => setSelectedAccount(itemValue)}
+              style={styles.picker}
+              itemStyle={styles.pickerItem}
+            >
+              {accounts.map((account) => (
+                <Picker.Item key={account.id} label={account.name} value={account.id} />
+              ))}
+            </Picker>
+          </View>
+        ))}
+
       </View>
 
       {isLoading && (
