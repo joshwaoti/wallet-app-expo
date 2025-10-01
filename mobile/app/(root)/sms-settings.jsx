@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Switch, StyleSheet, ScrollView, Alert, Platform, TextInput, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, Switch, StyleSheet, Alert, TextInput, FlatList, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getSMSSettings, setSMSSettings } from '../../lib/storage';
 import { smsMonitorService } from '../../lib/SMSMonitorService';
 import PageLoader from '../../components/PageLoader';
 import Slider from '@react-native-community/slider'; // Import Slider
+import { COLORS } from '@/constants/colors';
+import { Ionicons } from '@expo/vector-icons';
 
 const SMSSettingsScreen = () => {
   const [settings, setSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMonitoring, setIsMonitoring] = useState(false);
   const [newSender, setNewSender] = useState('');
 
   useEffect(() => {
@@ -27,7 +28,6 @@ const SMSSettingsScreen = () => {
         excludeKeywords: [],
         currency: 'USD', // Default currency
       });
-      setIsMonitoring(smsMonitorService.isMonitoring());
       setIsLoading(false);
     };
 
@@ -48,10 +48,8 @@ const SMSSettingsScreen = () => {
         setSettings({ ...updatedSettings, enabled: false }); // Revert toggle if not started
         await setSMSSettings({ ...updatedSettings, enabled: false });
       }
-      setIsMonitoring(started);
     } else {
       await smsMonitorService.stopMonitoring();
-      setIsMonitoring(false);
     }
   };
 
@@ -115,15 +113,18 @@ const SMSSettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.container}>
         <Text style={styles.header}>SMS Transaction Settings</Text>
 
         <View style={styles.settingItem}>
-          <Text style={styles.settingLabel}>Enable SMS Monitoring</Text>
+          <View style={styles.settingLeft}>
+            <Ionicons name="phone-portrait-outline" size={24} color={COLORS.primary} />
+            <Text style={styles.settingLabel}>Enable SMS Monitoring</Text>
+          </View>
           <Switch
-            trackColor={{ false: '#767577', true: '#81b0ff' }}
-            thumbColor={settings?.enabled ? '#f5dd4b' : '#f4f3f4'}
-            ios_backgroundColor="#3e3e3e"
+            trackColor={{ false: COLORS.border, true: COLORS.primary }}
+            thumbColor={settings?.enabled ? COLORS.white : COLORS.white}
+            ios_backgroundColor={COLORS.border}
             onValueChange={handleToggleSMSMonitoring}
             value={settings?.enabled || false}
           />
@@ -142,23 +143,27 @@ const SMSSettingsScreen = () => {
                 autoCapitalize="none"
               />
               <TouchableOpacity style={styles.addButton} onPress={handleAddSender}>
-                <Text style={styles.addButtonText}>Add</Text>
+                <Ionicons name="add-outline" size={24} color={COLORS.white} />
               </TouchableOpacity>
             </View>
-            <FlatList
-              data={settings.trustedSenders}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <View style={styles.senderItem}>
-                  <Text style={styles.senderText}>{item}</Text>
-                  <TouchableOpacity onPress={() => handleRemoveSender(item)} style={styles.removeButton}>
-                    <Text style={styles.removeButtonText}>Remove</Text>
-                  </TouchableOpacity>
-                </View>
-              )}
-              ListEmptyComponent={<Text style={styles.emptyListText}>No trusted senders added yet.</Text>}
-            />
           </View>
+        )}
+
+        {settings?.enabled && (
+          <FlatList
+            data={settings?.trustedSenders || []}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <View style={styles.senderItem}>
+                <Text style={styles.senderText}>{item}</Text>
+                <TouchableOpacity onPress={() => handleRemoveSender(item)} style={styles.removeButton}>
+                  <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+                </TouchableOpacity>
+              </View>
+            )}
+            ListEmptyComponent={<Text style={styles.emptyListText}>No trusted senders added yet.</Text>}
+            style={{ width: '100%', marginBottom: 20 }}
+          />
         )}
 
         {settings?.enabled && (
@@ -172,9 +177,9 @@ const SMSSettingsScreen = () => {
               step={1}
               value={settings?.popupDuration || 30}
               onValueChange={handlePopupDurationChange}
-              minimumTrackTintColor="#81b0ff"
-              maximumTrackTintColor="#d3d3d3"
-              thumbTintColor="#f5dd4b"
+              minimumTrackTintColor={COLORS.primary}
+              maximumTrackTintColor={COLORS.border}
+              thumbTintColor={COLORS.primary}
             />
           </View>
         )}
@@ -190,27 +195,29 @@ const SMSSettingsScreen = () => {
               step={100}
               value={settings?.minimumAmount || 0}
               onValueChange={handleMinimumAmountChange}
-              minimumTrackTintColor="#81b0ff"
-              maximumTrackTintColor="#d3d3d3"
-              thumbTintColor="#f5dd4b"
+              minimumTrackTintColor={COLORS.primary}
+              maximumTrackTintColor={COLORS.border}
+              thumbTintColor={COLORS.primary}
             />
           </View>
         )}
 
         {settings?.enabled && (
           <View style={styles.settingItem}>
-            <Text style={styles.settingLabel}>Use Overlay Popups</Text>
+            <View style={styles.settingLeft}>
+              <Ionicons name="layers-outline" size={24} color={COLORS.primary} />
+              <Text style={styles.settingLabel}>Use Overlay Popups</Text>
+            </View>
             <Switch
-              trackColor={{ false: '#767577', true: '#81b0ff' }}
-              thumbColor={settings?.useOverlay ? '#f5dd4b' : '#f4f3f4'}
-              ios_backgroundColor="#3e3e3e"
+              trackColor={{ false: COLORS.border, true: COLORS.primary }}
+              thumbColor={settings?.useOverlay ? COLORS.white : COLORS.white}
+              ios_backgroundColor={COLORS.border}
               onValueChange={handleToggleUseOverlay}
               value={settings?.useOverlay || false}
             />
           </View>
         )}
-
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
@@ -218,7 +225,7 @@ const SMSSettingsScreen = () => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#F0F2F5',
+    backgroundColor: COLORS.background,
   },
   container: {
     padding: 20,
@@ -227,26 +234,33 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: '#333',
+    color: COLORS.text,
     textAlign: 'center',
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#FFF',
+    backgroundColor: COLORS.card,
     padding: 15,
-    borderRadius: 10,
+    borderRadius: 15,
     marginBottom: 10,
-    shadowColor: '#000',
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 1.41,
-    elevation: 2,
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  settingLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 15,
   },
   settingLabel: {
     fontSize: 16,
-    color: '#333',
+    color: COLORS.text,
   },
   section: {
     marginTop: 20,
@@ -256,7 +270,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: '#333',
+    color: COLORS.text,
   },
   trustedSendersContainer: {
     flexDirection: 'row',
@@ -264,54 +278,48 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: '#F0F2F5',
+    backgroundColor: COLORS.card,
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     marginRight: 10,
     fontSize: 16,
-    borderColor: '#DDD',
+    borderColor: COLORS.border,
     borderWidth: 1,
+    color: COLORS.text,
   },
   addButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: COLORS.primary,
     padding: 10,
-    borderRadius: 8,
+    borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  addButtonText: {
-    color: '#FFF',
-    fontWeight: 'bold',
-    fontSize: 16,
+    width: 50,
   },
   senderItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#F9F9F9',
-    padding: 10,
-    borderRadius: 8,
-    marginBottom: 5,
-    borderColor: '#EEE',
+    backgroundColor: COLORS.card,
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    borderColor: COLORS.border,
     borderWidth: 1,
   },
   senderText: {
     fontSize: 16,
-    color: '#555',
+    color: COLORS.text,
   },
   removeButton: {
-    backgroundColor: '#DC3545',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  removeButtonText: {
-    color: '#FFF',
-    fontSize: 14,
+    backgroundColor: COLORS.expense,
+    padding: 10,
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyListText: {
     textAlign: 'center',
-    color: '#777',
+    color: COLORS.textLight,
     marginTop: 10,
     fontStyle: 'italic',
   },
@@ -321,7 +329,7 @@ const styles = StyleSheet.create({
   },
   sliderValueText: {
     fontSize: 16,
-    color: '#555',
+    color: COLORS.text,
     textAlign: 'center',
     marginBottom: 10,
   },

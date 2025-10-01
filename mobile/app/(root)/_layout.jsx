@@ -78,9 +78,7 @@ export default function Layout() {
         name="create"
         options={{
           title: "Create",
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="add-circle-outline" size={28} color={color} />
-          ),
+          href: null, // Hide this tab from the tab bar
           tabBarLabel: () => null, // Hide label for the FAB
         }}
       />

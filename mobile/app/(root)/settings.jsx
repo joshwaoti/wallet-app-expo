@@ -57,7 +57,10 @@ export default function SettingsScreen() {
       <View style={settingsStyles.section}>
         <Text style={settingsStyles.sectionTitle}>GENERAL</Text>
         <View style={settingsStyles.optionsCard}>
-          <TouchableOpacity style={settingsStyles.optionItem} onPress={() => Alert.alert("Profile", "Navigate to Profile Screen")}>
+          <TouchableOpacity 
+            style={settingsStyles.optionItem} 
+            onPress={() => router.push("/(root)/profile")}
+          >
             <View style={settingsStyles.optionLeft}>
               <Ionicons name="person-outline" size={24} color={COLORS.primary} />
               <Text style={settingsStyles.optionText}>Profile</Text>
@@ -68,6 +71,16 @@ export default function SettingsScreen() {
             <View style={settingsStyles.optionLeft}>
               <Ionicons name="color-palette-outline" size={24} color={COLORS.primary} />
               <Text style={settingsStyles.optionText}>Theme</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={settingsStyles.optionItem} 
+            onPress={() => router.push("/(root)/sms-settings")}
+          >
+            <View style={settingsStyles.optionLeft}>
+              <Ionicons name="chatbox-ellipses-outline" size={24} color={COLORS.primary} />
+              <Text style={settingsStyles.optionText}>SMS Transaction Settings</Text>
             </View>
             <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
           </TouchableOpacity>
