@@ -14,6 +14,8 @@ import { styles } from "../../assets/styles/create.styles";
 import { COLORS } from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import AccountCardSelector from "../../components/AccountCardSelector"; // Import the new component
+import AccountSelectionModal from "../../components/AccountSelectionModal"; // Import the new modal component
 
 const CATEGORIES = [
   { id: "food", name: "Food & Drinks", icon: "fast-food" },
@@ -38,6 +40,7 @@ const CreateScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState(null);
+  const [isAccountModalVisible, setIsAccountModalVisible] = useState(false); // New state for modal visibility
 
   useEffect(() => {
     fetchAccounts();
@@ -231,29 +234,22 @@ const CreateScreen = () => {
 
         {/* ACCOUNT SELECTOR */}
         {accountsLoading ? (
-          <View style={styles.loadingContainer}>
+          <View style={[styles.loadingContainer, { marginTop: 20 }]}>
             <ActivityIndicator size="small" color={COLORS.primary} />
             <Text style={{ color: COLORS.textLight, marginTop: 5 }}>Loading accounts...</Text>
           </View>
         ) : accountsError ? (
-          <View style={styles.errorContainer}>
+          <View style={[styles.errorContainer, { marginTop: 20 }]}>
             <Text style={styles.errorText}>Error loading accounts.</Text>
           </View>
-        ) : (accounts.length > 0 && (
-          <View style={styles.inputContainer}>
-            <Ionicons name="wallet-outline" size={22} color={COLORS.textLight} style={styles.inputIcon} />
-            <Picker
-              selectedValue={selectedAccount}
-              onValueChange={(itemValue) => setSelectedAccount(itemValue)}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-            >
-              {accounts.map((account) => (
-                <Picker.Item key={account.id} label={account.name} value={account.id} />
-              ))}
-            </Picker>
-          </View>
-        ))}
+        ) : accounts.length > 0 && (
+          <AccountCardSelector
+            selectedAccount={selectedAccount}
+            accounts={accounts}
+            onPress={() => setIsAccountModalVisible(true)}
+            style={{ marginTop: 20 }}
+          />
+        )}
 
       </View>
 
@@ -262,6 +258,17 @@ const CreateScreen = () => {
           <ActivityIndicator size="large" color={COLORS.primary} />
         </View>
       )}
+
+      <AccountSelectionModal
+        isVisible={isAccountModalVisible}
+        onClose={() => setIsAccountModalVisible(false)}
+        accounts={accounts}
+        selectedAccount={selectedAccount}
+        onSelectAccount={(accountId) => {
+          setSelectedAccount(accountId);
+          setIsAccountModalVisible(false);
+        }}
+      />
     </View>
   );
 };

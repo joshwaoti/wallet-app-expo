@@ -195,7 +195,7 @@ export default function ProfileScreen() {
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Email Address</Text>
-          <Text style={styles.valueText}>{email}</Text>
+          <Text style={styles.valueText}>{user?.emailAddresses[0]?.emailAddress}</Text>
         </View>
 
         <View style={styles.infoSection}>

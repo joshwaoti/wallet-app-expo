@@ -68,9 +68,9 @@ export default function Layout() {
         }}
       />
       <Tabs.Screen
-        name="add-account"
+        name="profile"
         options={{
-          title: "Add Account",
+          title: "Profile",
           href: null, // Hide this tab from the tab bar
         }}
       />
@@ -89,6 +89,18 @@ export default function Layout() {
           tabBarIcon: ({ color }) => (
             <Ionicons name="settings-outline" size={24} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="add-account"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="sms-settings"
+        options={{
+          href: null,
         }}
       />
     </Tabs>
