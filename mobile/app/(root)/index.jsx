@@ -114,6 +114,7 @@ export default function Page() {
         contentContainerStyle={styles.transactionsListContent}
         data={transactions}
         renderItem={({ item }) => <TransactionItem item={item} onDelete={handleDelete} />}
+        keyExtractor={(item) => item.id.toString()} // Explicitly set keyExtractor
         ListEmptyComponent={<NoTransactionsFound />}
         showsVerticalScrollIndicator={false}
         onEndReached={loadMoreTransactions}

@@ -36,7 +36,7 @@ const CreateScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState(null);
-  const { categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
+  const { categories, isLoading: categoriesLoading, error: categoriesError, createCategory } = useCategories();
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false); // New state for modal visibility
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
