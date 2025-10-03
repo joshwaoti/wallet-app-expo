@@ -17,7 +17,7 @@ export default function StatisticsScreen() {
   const [statisticsData, setStatisticsData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedPeriod, setSelectedPeriod] = useState("month"); // month, year, week, all
+  const [selectedPeriod, setSelectedPeriod] = useState("all"); // month, year, week, all
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchStatistics = useCallback(async () => {
@@ -50,7 +50,7 @@ export default function StatisticsScreen() {
   }, [fetchStatistics]);
 
   const topCategory = statisticsData?.spendingByCategory?.[0]?.category_name;
-  const dailyAverage = statisticsData?.totalExpenses / 30; // Assuming a 30-day month for simplicity
+  const dailyAverage = statisticsData?.totalExpenses !== undefined && parseFloat(statisticsData.totalExpenses) !== 0 ? Math.abs(parseFloat(statisticsData.totalExpenses) / 30) : 0; // Robust daily average calculation
 
   return (
     <SafeAreaView style={statsStyles.container}>
@@ -78,6 +78,12 @@ export default function StatisticsScreen() {
               onPress={() => setSelectedPeriod("year")}
             >
               <Text style={[statsStyles.periodButtonText, selectedPeriod === "year" && statsStyles.periodButtonTextActive]}>Year</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[statsStyles.periodButton, selectedPeriod === "all" && statsStyles.periodButtonActive]}
+              onPress={() => setSelectedPeriod("all")}
+            >
+              <Text style={[statsStyles.periodButtonText, selectedPeriod === "all" && statsStyles.periodButtonTextActive]}>All</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -118,17 +124,30 @@ export default function StatisticsScreen() {
 
             <BlurView intensity={20} tint="light" style={statsStyles.chartCard}>
               <Text style={statsStyles.chartTitle}>Spending by Category</Text>
-              <CategoryPieChart data={statisticsData.spendingByCategory} />
+              {/* <CategoryPieChart data={statisticsData.spendingByCategory} /> */}
+              {statisticsData.spendingByCategory && statisticsData.spendingByCategory.length > 0 ? (
+                <Text style={{ color: theme.textLight, textAlign: "center" }}>Pie chart temporarily disabled for debugging.</Text>
+              ) : (
+                <Text style={{ color: theme.textLight, textAlign: "center" }}>No spending data available for this period.</Text>
+              )}
             </BlurView>
 
             <BlurView intensity={20} tint="light" style={statsStyles.chartCard}>
               <Text style={statsStyles.chartTitle}>Spending by Category (Bar)</Text>
-              <CategoryBarChart data={statisticsData.spendingByCategory} />
+              {statisticsData.spendingByCategory && statisticsData.spendingByCategory.length > 0 ? (
+                <CategoryBarChart data={statisticsData.spendingByCategory} />
+              ) : (
+                <Text style={{ color: theme.textLight, textAlign: "center" }}>No spending data available for this period.</Text>
+              )}
             </BlurView>
 
             <BlurView intensity={20} tint="light" style={statsStyles.chartCard}>
               <Text style={statsStyles.chartTitle}>Expense History</Text>
-              <ExpenseLineGraph data={statisticsData.timeSeries} />
+              {statisticsData.timeSeries && statisticsData.timeSeries.length > 0 ? (
+                <ExpenseLineGraph data={statisticsData.timeSeries} />
+              ) : (
+                <Text style={{ color: theme.textLight, textAlign: "center" }}>No expense history available for this period.</Text>
+              )}
             </BlurView>
           </>
         ))}

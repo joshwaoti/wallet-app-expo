@@ -33,7 +33,7 @@ const CategoryPieChart = ({ data }) => {
 
     startAngle = endAngle;
 
-    return <Path key={item.category_name} d={d} fill={colors[index % colors.length]} />;
+    return <Path key={`${item.category_name}-${index}`} d={d} fill={colors[index % colors.length]} />;
   });
 
   return (

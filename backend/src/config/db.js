@@ -17,11 +17,6 @@ export async function initDB() {
       )
     `;
 
-    // Drop tables if they exist to ensure schema is up-to-date
-    await sql`DROP TABLE IF EXISTS transactions CASCADE`;
-    await sql`DROP TABLE IF EXISTS budgets CASCADE`;
-    await sql`DROP TABLE IF EXISTS categories CASCADE`;
-
     // Create categories table first as it's referenced by budgets and transactions
     await sql`
       CREATE TABLE IF NOT EXISTS categories (

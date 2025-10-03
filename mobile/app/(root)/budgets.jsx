@@ -32,6 +32,7 @@ const BudgetProgressBar = ({ spent, totalAmount }) => {
 
 const BudgetCategoryIcon = ({ icon }) => {
   const { theme } = useTheme();
+  const budgetStyles = getBudgetStyles(theme);
   return (
     <View style={budgetStyles.budgetCategoryIconContainer}>
       <Ionicons name={icon} size={20} color={theme.white} />
@@ -563,5 +564,18 @@ const getBudgetStyles = (theme) => StyleSheet.create({
     color: theme.white,
     fontSize: 16,
     fontWeight: "600",
+  },
+  budgetCategoryIconContainer: {
+    backgroundColor: theme.primary,
+    borderRadius: 10,
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: theme.shadow,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
   },
 });

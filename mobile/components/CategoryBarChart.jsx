@@ -45,7 +45,7 @@ const CategoryBarChart = ({ data }) => {
               const y = chartHeight - barHeight - 20;
 
               return (
-                <G key={item.category_name} x={x}>
+                <G key={`${item.category_name}-${index}`} x={x}>
                   <Rect
                     y={y}
                     width={barWidth}
