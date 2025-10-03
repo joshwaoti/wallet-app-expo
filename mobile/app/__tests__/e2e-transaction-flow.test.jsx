@@ -146,14 +146,14 @@ describe('E2E Transaction Flow', () => {
     // 4. Simulate user interacting with the popup and adding the transaction
     // (mocked in beforeEach: overlayManager.showTransactionPopup directly calls handleAddTransactionFromPopup)
     await waitFor(() => expect(overlayManager.handleAddTransactionFromPopup).toHaveBeenCalledWith(
-      expect.objectContaining({ amount: 150.75, category: 'Shopping' }), // Default category
+      expect.objectContaining({ amount: 150.75, category_id: 2 }), // Default category
       mockUserId,
       mockAccountId
     ));
 
     // 5. TransactionService is called to create the transaction
     await waitFor(() => expect(createTransaction).toHaveBeenCalledWith(
-      expect.objectContaining({ amount: 150.75, category: 'Shopping', source: 'sms' }),
+      expect.objectContaining({ amount: 150.75, category_id: 2, source: 'sms' }),
       mockUserId,
       mockAccountId
     ));

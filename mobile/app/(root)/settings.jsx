@@ -3,12 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, Switch, Alert, Share } from "
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/colors";
+import { useTheme } from '@/hooks/useTheme';
 import { router } from "expo-router";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function SettingsScreen() {
+  const { theme } = useTheme();
+  const settingsStyles = getSettingsStyles(theme);
   const { signOut } = useAuth();
   const { user } = useUser();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true); // Placeholder for notification state
@@ -62,37 +64,37 @@ export default function SettingsScreen() {
             onPress={() => router.push("/(root)/profile")}
           >
             <View style={settingsStyles.optionLeft}>
-              <Ionicons name="person-outline" size={24} color={COLORS.primary} />
+              <Ionicons name="person-outline" size={24} color={theme.primary} />
               <Text style={settingsStyles.optionText}>Profile</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+            <Ionicons name="chevron-forward" size={24} color={theme.textLight} />
           </TouchableOpacity>
-          <TouchableOpacity style={settingsStyles.optionItem} onPress={() => Alert.alert("Theme", "Navigate to Theme Settings")}>
+          <TouchableOpacity style={settingsStyles.optionItem} onPress={() => router.push("/(root)/themes")}>
             <View style={settingsStyles.optionLeft}>
-              <Ionicons name="color-palette-outline" size={24} color={COLORS.primary} />
+              <Ionicons name="color-palette-outline" size={24} color={theme.primary} />
               <Text style={settingsStyles.optionText}>Theme</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+            <Ionicons name="chevron-forward" size={24} color={theme.textLight} />
           </TouchableOpacity>
           <TouchableOpacity 
             style={settingsStyles.optionItem} 
             onPress={() => router.push("/(root)/sms-settings")}
           >
             <View style={settingsStyles.optionLeft}>
-              <Ionicons name="chatbox-ellipses-outline" size={24} color={COLORS.primary} />
+              <Ionicons name="chatbox-ellipses-outline" size={24} color={theme.primary} />
               <Text style={settingsStyles.optionText}>SMS Transaction Settings</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+            <Ionicons name="chevron-forward" size={24} color={theme.textLight} />
           </TouchableOpacity>
           <View style={settingsStyles.optionItemNoBorder}>
             <View style={settingsStyles.optionLeft}>
-              <Ionicons name="notifications-outline" size={24} color={COLORS.primary} />
+              <Ionicons name="notifications-outline" size={24} color={theme.primary} />
               <Text style={settingsStyles.optionText}>Notifications</Text>
             </View>
             <Switch
-              trackColor={{ false: COLORS.border, true: COLORS.primary }}
-              thumbColor={notificationsEnabled ? COLORS.white : COLORS.white}
-              ios_backgroundColor={COLORS.border}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor={notificationsEnabled ? theme.white : theme.white}
+              ios_backgroundColor={theme.border}
               onValueChange={() => setNotificationsEnabled(previousState => !previousState)}
               value={notificationsEnabled}
             />
@@ -105,10 +107,10 @@ export default function SettingsScreen() {
         <View style={settingsStyles.optionsCard}>
           <TouchableOpacity style={settingsStyles.optionItemNoBorder} onPress={handleExportTransactions}>
             <View style={settingsStyles.optionLeft}>
-              <MaterialCommunityIcons name="download-box-outline" size={24} color={COLORS.primary} />
+              <MaterialCommunityIcons name="download-box-outline" size={24} color={theme.primary} />
               <Text style={settingsStyles.optionText}>Export Transactions to CSV</Text>
             </View>
-            <Ionicons name="chevron-forward" size={24} color={COLORS.textLight} />
+            <Ionicons name="chevron-forward" size={24} color={theme.textLight} />
           </TouchableOpacity>
         </View>
       </View>
@@ -116,18 +118,19 @@ export default function SettingsScreen() {
       <View style={settingsStyles.spacer} />
 
       <TouchableOpacity style={settingsStyles.logoutButton} onPress={handleLogout}>
-        <MaterialCommunityIcons name="logout" size={24} color={COLORS.expense} />
+        <MaterialCommunityIcons name="logout" size={24} color={theme.expense} />
         <Text style={settingsStyles.logoutButtonText}>Log Out</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
 }
 
-const settingsStyles = StyleSheet.create({
+const getSettingsStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
+    paddingBottom: 100, // Increased padding
   },
   header: {
     marginBottom: 30,
@@ -135,7 +138,7 @@ const settingsStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   section: {
     marginBottom: 25,
@@ -143,17 +146,17 @@ const settingsStyles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.textLight,
+    color: theme.textLight,
     marginBottom: 10,
     paddingLeft: 5,
   },
   optionsCard: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 15,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     overflow: "hidden",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -166,7 +169,7 @@ const settingsStyles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 15,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: theme.border,
   },
   optionItemNoBorder: {
     flexDirection: "row",
@@ -182,7 +185,7 @@ const settingsStyles = StyleSheet.create({
   },
   optionText: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   spacer: {
     flex: 1,
@@ -191,13 +194,13 @@ const settingsStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: COLORS.expense + "20", // 20% opacity
+    backgroundColor: theme.expense + "20", // 20% opacity
     padding: 15,
     borderRadius: 15,
     gap: 10,
   },
   logoutButtonText: {
-    color: COLORS.expense,
+    color: theme.expense,
     fontSize: 18,
     fontWeight: "700",
   },

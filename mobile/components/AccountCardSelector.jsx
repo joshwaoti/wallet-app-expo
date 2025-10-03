@@ -6,7 +6,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 const AccountCardSelector = ({
   selectedAccount,
@@ -14,27 +14,29 @@ const AccountCardSelector = ({
   onPress,
   style,
 }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const displayAccountName = selectedAccount
     ? accounts.find((acc) => acc.id === selectedAccount)?.name || 'Select Account'
     : 'Select Account';
 
   return (
     <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
-      <Ionicons name="wallet-outline" size={22} color={COLORS.textLight} style={styles.icon} />
+      <Ionicons name="wallet-outline" size={22} color={theme.textLight} style={styles.icon} />
       <Text style={styles.accountName}>{displayAccountName}</Text>
-      <Ionicons name="chevron-forward" size={20} color={COLORS.textLight} />
+      <Ionicons name="chevron-forward" size={20} color={theme.textLight} />
     </TouchableOpacity>
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 10,
     padding: 15,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
@@ -46,7 +48,7 @@ const styles = StyleSheet.create({
   accountName: {
     flex: 1,
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     fontWeight: '500',
   },
 });

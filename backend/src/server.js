@@ -7,6 +7,7 @@ import transactionsRoute from "./routes/transactionsRoute.js";
 import accountsRoute from "./routes/accountsRoute.js";
 import budgetsRoute from "./routes/budgetsRoute.js";
 import statisticsRoute from "./routes/statisticsRoute.js";
+import categoriesRoute from "./routes/categoriesRoute.js";
 import job from "./config/cron.js";
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use("/api/transactions", transactionsRoute);
 app.use("/api/accounts", accountsRoute);
 app.use("/api/budgets", budgetsRoute);
 app.use("/api/statistics", statisticsRoute);
+app.use("/api/categories", categoriesRoute);
 
 initDB().then(() => {
   app.listen(PORT, () => {

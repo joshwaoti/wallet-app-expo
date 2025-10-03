@@ -5,7 +5,8 @@ import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState } from "react";
 import PageLoader from "../../components/PageLoader";
-import { styles } from "../../assets/styles/home.styles";
+import { getHomeStyles } from "../../assets/styles/home.styles";
+import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { BalanceCard } from "../../components/BalanceCard";
 import { TransactionItem } from "../../components/TransactionItem";
@@ -15,6 +16,8 @@ import { permissionManager } from "../../lib/permissionManager";
 import { getSMSSettings } from "../../lib/storage";
 
 export default function Page() {
+  const { theme } = useTheme();
+  const styles = getHomeStyles(theme);
   const { user } = useUser();
   const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);

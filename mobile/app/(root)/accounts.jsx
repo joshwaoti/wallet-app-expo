@@ -3,12 +3,14 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, 
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { router } from "expo-router";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const AccountItem = ({ account, onPress }) => {
+  const { theme } = useTheme();
+  const accountStyles = getAccountStyles(theme);
   const getAccountIcon = (type) => {
     switch (type.toLowerCase()) {
       case "bank":
@@ -29,7 +31,7 @@ const AccountItem = ({ account, onPress }) => {
           <MaterialCommunityIcons
             name={getAccountIcon(account.type)}
             size={24}
-            color={COLORS.primary}
+            color={theme.primary}
           />
         </View>
         <View>
@@ -43,6 +45,8 @@ const AccountItem = ({ account, onPress }) => {
 };
 
 export default function AccountsScreen() {
+  const { theme } = useTheme();
+  const accountStyles = getAccountStyles(theme);
   const { user } = useUser();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,8 +93,8 @@ export default function AccountsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={accountStyles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={{ color: COLORS.textLight, marginTop: 10 }}>Loading accounts...</Text>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={{ color: theme.textLight, marginTop: 10 }}>Loading accounts...</Text>
       </SafeAreaView>
     );
   }
@@ -111,7 +115,7 @@ export default function AccountsScreen() {
       <View style={accountStyles.header}>
         <Text style={accountStyles.headerTitle}>My Accounts</Text>
         <TouchableOpacity style={accountStyles.addButton} onPress={handleAddAccount}>
-          <Ionicons name="add" size={20} color={COLORS.white} />
+          <Ionicons name="add" size={20} color={theme.white} />
           <Text style={accountStyles.addButtonText}>Add New</Text>
         </TouchableOpacity>
       </View>
@@ -123,13 +127,13 @@ export default function AccountsScreen() {
         contentContainerStyle={accountStyles.listContent}
         ListEmptyComponent={
           <View style={accountStyles.emptyState}>
-            <MaterialCommunityIcons name="wallet-plus-outline" size={60} color={COLORS.textLight} />
+            <MaterialCommunityIcons name="wallet-plus-outline" size={60} color={theme.textLight} />
             <Text style={accountStyles.emptyStateTitle}>No Accounts Found</Text>
             <Text style={accountStyles.emptyStateText}>
               Looks like you haven&apos;t added any accounts yet. Tap &quot;Add New&quot; to get started!
             </Text>
             <TouchableOpacity style={accountStyles.emptyStateButton} onPress={handleAddAccount}>
-              <Ionicons name="add" size={20} color={COLORS.white} />
+              <Ionicons name="add" size={20} color={theme.white} />
               <Text style={accountStyles.emptyStateButtonText}>Add Account</Text>
             </TouchableOpacity>
           </View>
@@ -141,10 +145,10 @@ export default function AccountsScreen() {
   );
 }
 
-const accountStyles = StyleSheet.create({
+const getAccountStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
   },
   header: {
@@ -156,23 +160,23 @@ const accountStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   addButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -180,20 +184,20 @@ const accountStyles = StyleSheet.create({
     paddingBottom: 20,
   },
   accountCard: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 20,
     marginBottom: 15,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   accountInfo: {
     flexDirection: "row",
@@ -203,7 +207,7 @@ const accountStyles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     justifyContent: "center",
     alignItems: "center",
     marginRight: 15,
@@ -211,92 +215,92 @@ const accountStyles = StyleSheet.create({
   accountName: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
   },
   accountType: {
     fontSize: 14,
-    color: COLORS.textLight,
+    color: theme.textLight,
     textTransform: "capitalize",
   },
   accountBalance: {
     fontSize: 20,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
   },
   errorText: {
-    color: COLORS.expense,
+    color: theme.expense,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
   retryButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },
   emptyState: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 30,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
     marginTop: 15,
     marginBottom: 8,
   },
   emptyStateText: {
-    color: COLORS.textLight,
+    color: theme.textLight,
     fontSize: 15,
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 22,
   },
   emptyStateButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
   },
   emptyStateButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontWeight: "600",
     marginLeft: 8,
     fontSize: 16,

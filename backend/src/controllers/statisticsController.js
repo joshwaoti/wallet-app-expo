@@ -19,8 +19,9 @@ export async function getStatistics(req, res) {
         break;
       case "week":
         const day = now.getDay();
-        startDate = new Date(now.setDate(now.getDate() - day)); // Sunday
-        endDate = new Date(now.setDate(now.getDate() - day + 6)); // Saturday
+        const diff = now.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Monday start of week, assuming 0 is Sunday
+        startDate = new Date(now.getFullYear(), now.getMonth(), diff);
+        endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6);
         break;
       default:
         startDate = new Date(0); // Epoch, to get all data
@@ -43,13 +44,15 @@ export async function getStatistics(req, res) {
     // 2. Spending broken down by category
     const spendingByCategory = await sql`
       SELECT 
-        category, 
-        COALESCE(SUM(amount), 0) AS amount_spent
-      FROM transactions
-      WHERE user_id = ${userId} 
-      AND amount < 0 
-      AND created_at >= ${formattedStartDate} AND created_at <= ${formattedEndDate}
-      GROUP BY category
+        c.name as category_name, 
+        c.icon as category_icon,
+        COALESCE(SUM(t.amount), 0) AS amount_spent
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.user_id = ${userId} 
+      AND t.amount < 0 
+      AND t.created_at >= ${formattedStartDate} AND t.created_at <= ${formattedEndDate}
+      GROUP BY c.name, c.icon
       ORDER BY amount_spent ASC;
     `;
 
@@ -86,7 +89,7 @@ export async function getStatistics(req, res) {
     res.status(200).json({
       totalIncome: parseFloat(total_income).toFixed(2),
       totalExpenses: parseFloat(total_expenses).toFixed(2),
-      spendingByCategory: spendingByCategory.map(item => ({ category: item.category, amount: parseFloat(item.amount_spent).toFixed(2) })),
+      spendingByCategory: spendingByCategory.map(item => ({ category: item.category_name, icon: item.category_icon, amount: parseFloat(item.amount_spent).toFixed(2) })),
       timeSeries: timeSeriesQuery.map(item => ({ date: item.date || item.month, expenses: parseFloat(item.daily_expenses || item.monthly_expenses).toFixed(2) })),
     });
 

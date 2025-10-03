@@ -5,9 +5,11 @@ export async function getBudgetsByUserId(req, res) {
     const { userId } = req.params;
     const { month } = req.params;
 
-    // Fetch budgets for the user and month
     const budgets = await sql`
-      SELECT * FROM budgets WHERE user_id = ${userId} AND month = ${month}
+      SELECT b.*, c.name as category_name, c.icon as category_icon
+      FROM budgets b
+      LEFT JOIN categories c ON b.category_id = c.id
+      WHERE b.user_id = ${userId} AND b.month = ${month}
     `;
 
     // For each budget, calculate current spending
@@ -17,7 +19,7 @@ export async function getBudgetsByUserId(req, res) {
           SELECT COALESCE(SUM(amount), 0) as spent 
           FROM transactions 
           WHERE user_id = ${userId} 
-          AND category = ${budget.category} 
+          AND category_id = ${budget.category_id} 
           AND TO_CHAR(created_at, 'YYYY-MM') = ${month} 
           AND amount < 0;
         `;
@@ -34,15 +36,15 @@ export async function getBudgetsByUserId(req, res) {
 
 export async function createBudget(req, res) {
   try {
-    const { category, amount, month, user_id } = req.body;
+    const { category_id, amount, month, user_id } = req.body;
 
-    if (!user_id || !category || amount === undefined || !month) {
+    if (!user_id || !category_id || amount === undefined || !month) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const budget = await sql`
-      INSERT INTO budgets(user_id, category, amount, month)
-      VALUES (${user_id}, ${category}, ${amount}, ${month})
+      INSERT INTO budgets(user_id, category_id, amount, month)
+      VALUES (${user_id}, ${category_id}, ${amount}, ${month})
       RETURNING *
     `;
 
@@ -59,15 +61,15 @@ export async function createBudget(req, res) {
 export async function updateBudget(req, res) {
   try {
     const { id } = req.params;
-    const { category, amount, month } = req.body;
+    const { category_id, amount, month } = req.body;
 
-    if (!category || amount === undefined || !month) {
+    if (!category_id || amount === undefined || !month) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
     const result = await sql`
       UPDATE budgets
-      SET category = ${category}, amount = ${amount}, month = ${month}
+      SET category_id = ${category_id}, amount = ${amount}, month = ${month}
       WHERE id = ${id}
       RETURNING *
     `;

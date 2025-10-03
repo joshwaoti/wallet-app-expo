@@ -8,7 +8,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS } from '../constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 
 const AccountSelectionModal = ({
   isVisible,
@@ -17,6 +17,9 @@ const AccountSelectionModal = ({
   selectedAccount,
   onSelectAccount,
 }) => {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
+
   const renderAccountItem = ({ item }) => (
     <TouchableOpacity
       style={[
@@ -28,7 +31,7 @@ const AccountSelectionModal = ({
       <Ionicons
         name="wallet-outline"
         size={24}
-        color={selectedAccount === item.id ? COLORS.white : COLORS.text}
+        color={selectedAccount === item.id ? theme.white : theme.text}
         style={styles.accountIcon}
       />
       <Text
@@ -40,7 +43,7 @@ const AccountSelectionModal = ({
         {item.name}
       </Text>
       {selectedAccount === item.id && (
-        <Ionicons name="checkmark-circle" size={20} color={COLORS.white} />
+        <Ionicons name="checkmark-circle" size={20} color={theme.white} />
       )}
     </TouchableOpacity>
   );
@@ -57,7 +60,7 @@ const AccountSelectionModal = ({
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select Account</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color={COLORS.text} />
+              <Ionicons name="close" size={24} color={theme.text} />
             </TouchableOpacity>
           </View>
 
@@ -79,14 +82,14 @@ const AccountSelectionModal = ({
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   modalOverlay: {
     flex: 1,
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContainer: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -101,21 +104,21 @@ const styles = StyleSheet.create({
   modalTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: COLORS.text,
+    color: theme.text,
   },
   accountItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     borderRadius: 10,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   selectedAccountItem: {
-    backgroundColor: COLORS.primary,
-    borderColor: COLORS.primary,
+    backgroundColor: theme.primary,
+    borderColor: theme.primary,
   },
   accountIcon: {
     marginRight: 10,
@@ -123,17 +126,17 @@ const styles = StyleSheet.create({
   accountName: {
     flex: 1,
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   selectedAccountName: {
-    color: COLORS.white,
+    color: theme.white,
   },
   emptyState: {
     padding: 20,
     alignItems: 'center',
   },
   emptyStateText: {
-    color: COLORS.textLight,
+    color: theme.textLight,
     fontSize: 16,
   },
 });

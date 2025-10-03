@@ -13,6 +13,8 @@ import { reportIncorrectExtraction } from "../lib/transactionService"; // Import
 
 const CLERK_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 
+import { ThemeProvider } from '@/hooks/useTheme';
+
 function InitialLayout() {
   const { isSignedIn, isLoaded } = useAuth();
   const segments = useSegments();
@@ -70,9 +72,11 @@ function InitialLayout() {
 export default function RootLayout() {
   return (
     <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
-      <SafeScreen>
-        <InitialLayout />
-      </SafeScreen>
+      <ThemeProvider>
+        <SafeScreen>
+          <InitialLayout />
+        </SafeScreen>
+      </ThemeProvider>
       <StatusBar style="dark" />
     </ClerkProvider>
   );

@@ -2,20 +2,25 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Modal, TextInput, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/colors";
+import { useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+import { useCategories } from "../../hooks/useCategories";
+import { useTheme } from "@/hooks/useTheme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const BudgetProgressBar = ({ spent, totalAmount }) => {
+  const { theme } = useTheme();
+  const budgetStyles = getBudgetStyles(theme);
   const percentage = (spent / totalAmount) * 100;
-  let progressBarColor = COLORS.income;
+  let progressBarColor = theme.income;
 
   if (percentage > 75 && percentage <= 100) {
-    progressBarColor = COLORS.primary;
+    progressBarColor = theme.primary;
   } else if (percentage > 100) {
-    progressBarColor = COLORS.expense;
+    progressBarColor = theme.expense;
   }
 
   return (
@@ -25,50 +30,35 @@ const BudgetProgressBar = ({ spent, totalAmount }) => {
   );
 };
 
-const BudgetCategoryIcon = ({ category }) => {
-  let iconName = "tag";
-  switch (category.toLowerCase()) {
-    case "food & drinks":
-      iconName = "fast-food";
-      break;
-    case "shopping":
-      iconName = "cart";
-      break;
-    case "transportation":
-      iconName = "car";
-      break;
-    case "entertainment":
-      iconName = "film";
-      break;
-    case "bills":
-      iconName = "receipt";
-      break;
-    case "income":
-      iconName = "cash";
-      break;
-    default:
-      iconName = "tag-outline";
-  }
-  return <Ionicons name={iconName} size={20} color={COLORS.primary} />;
+const BudgetCategoryIcon = ({ icon }) => {
+  const { theme } = useTheme();
+  return (
+    <View style={budgetStyles.budgetCategoryIconContainer}>
+      <Ionicons name={icon} size={20} color={theme.white} />
+    </View>
+  );
 };
 
+// Moved BudgetAddEditModal definition outside of BudgetsScreen
 const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
-  const [category, setCategory] = useState(budgetToEdit?.category || "food & drinks");
+  const { theme } = useTheme();
+  const budgetStyles = getBudgetStyles(theme);
+  const { categories } = useCategories();
+  const [category, setCategory] = useState(budgetToEdit?.category_id || (categories.length > 0 ? categories[0].id : ""));
   const [amount, setAmount] = useState(budgetToEdit?.amount ? String(budgetToEdit.amount) : "");
 
   useEffect(() => {
     if (budgetToEdit) {
-      setCategory(budgetToEdit.category);
+      setCategory(budgetToEdit.category_id);
       setAmount(String(budgetToEdit.amount));
     } else {
-      setCategory("food & drinks");
-      setAmount("");
+      setCategory(categories.length > 0 ? categories[0].id : "");
     }
-  }, [budgetToEdit]);
+  }, [isVisible, budgetToEdit, categories]);
 
-  const handleSave = () => {
+  const handleModalSave = async () => {
     if (!category || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
-      Alert.alert("Error", "Please enter a valid category and amount.");
+      Alert.alert("Error", "Please select a valid category and enter a valid amount.");
       return;
     }
     onSave({ category, amount: parseFloat(amount) });
@@ -93,8 +83,8 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
               onValueChange={(itemValue) => setCategory(itemValue)}
               style={budgetStyles.picker}
             >
-              {CATEGORIES.filter(cat => cat.id !== 'income').map((cat) => (
-                <Picker.Item key={cat.id} label={cat.name} value={cat.name} />
+              {categories.map((cat) => (
+                <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
               ))}
             </Picker>
           </View>
@@ -103,7 +93,7 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
           <TextInput
             style={budgetStyles.input}
             placeholder="e.g., 500"
-            placeholderTextColor={COLORS.textLight}
+            placeholderTextColor={theme.textLight}
             keyboardType="numeric"
             value={amount}
             onChangeText={setAmount}
@@ -113,7 +103,7 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
             <TouchableOpacity style={budgetStyles.modalCancelButton} onPress={onClose}>
               <Text style={budgetStyles.modalCancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={budgetStyles.modalSaveButton} onPress={handleSave}>
+            <TouchableOpacity style={budgetStyles.modalSaveButton} onPress={handleModalSave}>
               <Text style={budgetStyles.modalSaveButtonText}>Save</Text>
             </TouchableOpacity>
           </View>
@@ -123,18 +113,15 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
   );
 };
 
-const CATEGORIES = [
-  { id: "food", name: "Food & Drinks", icon: "fast-food" },
-  { id: "shopping", name: "Shopping", icon: "cart" },
-  { id: "transportation", name: "Transportation", icon: "car" },
-  { id: "entertainment", name: "Entertainment", icon: "film" },
-  { id: "bills", name: "Bills", icon: "receipt" },
-  { id: "income", name: "Income", icon: "cash" },
-  { id: "other", name: "Other", icon: "ellipsis-horizontal" },
-];
-
+// Main BudgetsScreen component
+// This is the correct and only declaration for BudgetsScreen
 export default function BudgetsScreen() {
+  const { theme } = useTheme();
+  const budgetStyles = getBudgetStyles(theme);
+  const router = useRouter();
   const { user } = useUser();
+  const { categories } = useCategories();
+
   const [budgets, setBudgets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -150,7 +137,7 @@ export default function BudgetsScreen() {
 
   const fetchBudgets = useCallback(async () => {
     if (!user?.id) return;
-    if (!refreshing) setLoading(true);
+    setLoading(true);
     setError(null);
     try {
       const response = await fetch(`${API_URL}/budgets/${user.id}/${currentMonth}`);
@@ -159,11 +146,11 @@ export default function BudgetsScreen() {
     } catch (err) {
       console.error("Error fetching budgets:", err);
       setError("Failed to load budgets. Please try again.");
+      Alert.alert("Error", "Failed to load budgets. Please try again.");
     } finally {
       setLoading(false);
-      setRefreshing(false);
     }
-  }, [user, currentMonth]);
+  }, [user?.id, currentMonth]);
 
   useEffect(() => {
     fetchBudgets();
@@ -248,8 +235,8 @@ export default function BudgetsScreen() {
   if (loading) {
     return (
       <SafeAreaView style={budgetStyles.loadingContainer}>
-        <ActivityIndicator size="large" color={COLORS.primary} />
-        <Text style={{ color: COLORS.textLight, marginTop: 10 }}>Loading budgets...</Text>
+        <ActivityIndicator size="large" color={theme.primary} />
+        <Text style={{ color: theme.textLight, marginTop: 10 }}>Loading budgets...</Text>
       </SafeAreaView>
     );
   }
@@ -270,7 +257,7 @@ export default function BudgetsScreen() {
       <View style={budgetStyles.header}>
         <Text style={budgetStyles.headerTitle}>Budgets</Text>
         <TouchableOpacity style={budgetStyles.addButton} onPress={handleAddBudget}>
-          <Ionicons name="add" size={20} color={COLORS.white} />
+          <Ionicons name="add" size={20} color={theme.white} />
           <Text style={budgetStyles.addButtonText}>Add Budget</Text>
         </TouchableOpacity>
       </View>
@@ -282,10 +269,10 @@ export default function BudgetsScreen() {
           <TouchableOpacity style={budgetStyles.budgetCard} onLongPress={() => handleDeleteBudget(item.id)} onPress={() => handleEditBudget(item)}>
             <View style={budgetStyles.budgetCardHeader}>
               <View style={budgetStyles.budgetCategoryInfo}>
-                <BudgetCategoryIcon category={item.category} />
-                <Text style={budgetStyles.budgetCategory}>{item.category}</Text>
+                <BudgetCategoryIcon icon={item.category_icon} />
+                <Text style={budgetStyles.budgetCategory}>{item.category_name}</Text>
               </View>
-              <Text style={budgetStyles.budgetAmount}>${item.spent.toFixed(2)} / <Text style={{ opacity: 0.7 }}>${item.amount.toFixed(2)}</Text></Text>
+              <Text style={budgetStyles.budgetAmount}>${parseFloat(item.spent || 0).toFixed(2)} / <Text style={{ opacity: 0.7 }}>${parseFloat(item.amount || 0).toFixed(2)}</Text></Text>
             </View>
             <BudgetProgressBar spent={item.spent} totalAmount={item.amount} />
           </TouchableOpacity>
@@ -293,13 +280,13 @@ export default function BudgetsScreen() {
         contentContainerStyle={budgetStyles.listContent}
         ListEmptyComponent={
           <View style={budgetStyles.emptyState}>
-            <MaterialCommunityIcons name="cash-minus" size={60} color={COLORS.textLight} />
+            <MaterialCommunityIcons name="cash-minus" size={60} color={theme.textLight} />
             <Text style={budgetStyles.emptyStateTitle}>No Budgets Set</Text>
             <Text style={budgetStyles.emptyStateText}>
               You haven&apos;t set any budgets for this month. Tap &quot;Add Budget&quot; to get started!
             </Text>
             <TouchableOpacity style={budgetStyles.emptyStateButton} onPress={handleAddBudget}>
-              <Ionicons name="add" size={20} color={COLORS.white} />
+              <Ionicons name="add" size={20} color={theme.white} />
               <Text style={budgetStyles.emptyStateButtonText}>Add Budget</Text>
             </TouchableOpacity>
           </View>
@@ -318,10 +305,10 @@ export default function BudgetsScreen() {
   );
 }
 
-const budgetStyles = StyleSheet.create({
+const getBudgetStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
   },
   header: {
@@ -333,23 +320,23 @@ const budgetStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 24,
     flexDirection: "row",
     alignItems: "center",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
   addButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontWeight: "600",
     marginLeft: 4,
   },
@@ -357,17 +344,17 @@ const budgetStyles = StyleSheet.create({
     paddingBottom: 20,
   },
   budgetCard: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 20,
     marginBottom: 15,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   budgetCardHeader: {
     flexDirection: "row",
@@ -383,16 +370,16 @@ const budgetStyles = StyleSheet.create({
   budgetCategory: {
     fontSize: 18,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
   },
   budgetAmount: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     fontWeight: "500",
   },
   progressBarBackground: {
     width: "100%",
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     borderRadius: 10,
     height: 10,
     overflow: "hidden",
@@ -405,76 +392,76 @@ const budgetStyles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
   },
   errorText: {
-    color: COLORS.expense,
+    color: theme.expense,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
   retryButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },
   emptyState: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 30,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 20,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   emptyStateTitle: {
     fontSize: 20,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
     marginTop: 15,
     marginBottom: 8,
   },
   emptyStateText: {
-    color: COLORS.textLight,
+    color: theme.textLight,
     fontSize: 15,
     textAlign: "center",
     marginBottom: 20,
     lineHeight: 22,
   },
   emptyStateButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 25,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
   },
   emptyStateButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontWeight: "600",
     marginLeft: 8,
     fontSize: 16,
@@ -486,11 +473,11 @@ const budgetStyles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalContent: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 25,
     width: "90%",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.2,
     shadowRadius: 10,
@@ -499,38 +486,38 @@ const budgetStyles = StyleSheet.create({
   modalTitle: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 20,
     textAlign: "center",
   },
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 8,
     marginTop: 10,
   },
   input: {
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   pickerContainer: {
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     overflow: "hidden",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -540,7 +527,7 @@ const budgetStyles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    color: COLORS.text,
+    color: theme.text,
   },
   modalButtonContainer: {
     flexDirection: "row",
@@ -553,10 +540,10 @@ const budgetStyles = StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     alignItems: "center",
-    backgroundColor: COLORS.border,
+    backgroundColor: theme.border,
   },
   modalCancelButtonText: {
-    color: COLORS.text,
+    color: theme.text,
     fontSize: 16,
     fontWeight: "600",
   },
@@ -565,15 +552,15 @@ const budgetStyles = StyleSheet.create({
     padding: 15,
     borderRadius: 15,
     alignItems: "center",
-    backgroundColor: COLORS.primary,
-    shadowColor: COLORS.primary,
+    backgroundColor: theme.primary,
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   modalSaveButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
   },

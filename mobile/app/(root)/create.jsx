@@ -9,25 +9,21 @@ import {
 import { useRouter } from "expo-router";
 import { useUser } from "@clerk/clerk-expo";
 import { useState, useEffect } from "react";
-import { API_URL } from "../../constants/api";
-import { styles } from "../../assets/styles/create.styles";
-import { COLORS } from "../../constants/colors";
+import { getCreateStyles } from "../../assets/styles/create.styles";
+import { useTheme } from "@/hooks/useTheme";
 import { Ionicons } from "@expo/vector-icons";
 import { Picker } from "@react-native-picker/picker";
+
 import AccountCardSelector from "../../components/AccountCardSelector"; // Import the new component
 import AccountSelectionModal from "../../components/AccountSelectionModal"; // Import the new modal component
+import AddCategoryModal from "../../components/AddCategoryModal"; // Import the new modal component
+import { useCategories } from "../../hooks/useCategories";
 
-const CATEGORIES = [
-  { id: "food", name: "Food & Drinks", icon: "fast-food" },
-  { id: "shopping", name: "Shopping", icon: "cart" },
-  { id: "transportation", name: "Transportation", icon: "car" },
-  { id: "entertainment", name: "Entertainment", icon: "film" },
-  { id: "bills", name: "Bills", icon: "receipt" },
-  { id: "income", name: "Income", icon: "cash" },
-  { id: "other", name: "Other", icon: "ellipsis-horizontal" },
-];
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const CreateScreen = () => {
+  const { theme } = useTheme();
+  const styles = getCreateStyles(theme);
   const router = useRouter();
   const { user } = useUser();
 
@@ -40,7 +36,9 @@ const CreateScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState(null);
+  const { categories, createCategory } = useCategories();
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false); // New state for modal visibility
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
   useEffect(() => {
     fetchAccounts();
@@ -95,7 +93,7 @@ const CreateScreen = () => {
           name: user.fullName || user.username,
           title,
           amount: formattedAmount,
-          category: selectedCategory,
+          category_id: selectedCategory,
           account_id: selectedAccount,
         }),
       });
@@ -121,7 +119,7 @@ const CreateScreen = () => {
       {/* HEADER */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>New Transaction</Text>
         <TouchableOpacity
@@ -130,7 +128,7 @@ const CreateScreen = () => {
           disabled={isLoading || accountsLoading}
         >
           <Text style={styles.saveButton}>{isLoading ? "Saving..." : "Save"}</Text>
-          {!isLoading && <Ionicons name="checkmark" size={18} color={COLORS.primary} />}
+          {!isLoading && <Ionicons name="checkmark" size={18} color={theme.primary} />}
         </TouchableOpacity>
       </View>
 
@@ -144,7 +142,7 @@ const CreateScreen = () => {
             <Ionicons
               name="arrow-down-circle"
               size={22}
-              color={isExpense ? COLORS.white : COLORS.expense}
+              color={isExpense ? theme.white : theme.expense}
               style={styles.typeIcon}
             />
             <Text style={[styles.typeButtonText, isExpense && styles.typeButtonTextActive]}>
@@ -160,7 +158,7 @@ const CreateScreen = () => {
             <Ionicons
               name="arrow-up-circle"
               size={22}
-              color={!isExpense ? COLORS.white : COLORS.income}
+              color={!isExpense ? theme.white : theme.income}
               style={styles.typeIcon}
             />
             <Text style={[styles.typeButtonText, !isExpense && styles.typeButtonTextActive]}>
@@ -175,7 +173,7 @@ const CreateScreen = () => {
           <TextInput
             style={styles.amountInput}
             placeholder="0.00"
-            placeholderTextColor={COLORS.textLight}
+            placeholderTextColor={theme.textLight}
             value={amount}
             onChangeText={setAmount}
             keyboardType="numeric"
@@ -187,43 +185,47 @@ const CreateScreen = () => {
           <Ionicons
             name="create-outline"
             size={22}
-            color={COLORS.textLight}
+            color={theme.textLight}
             style={styles.inputIcon}
           />
           <TextInput
             style={styles.input}
             placeholder="Transaction Title"
-            placeholderTextColor={COLORS.textLight}
+            placeholderTextColor={theme.textLight}
             value={title}
             onChangeText={setTitle}
           />
         </View>
 
-        {/* TITLE */}
-        <Text style={styles.sectionTitle}>
-          <Ionicons name="pricetag-outline" size={16} color={COLORS.text} /> Category
-        </Text>
+        <View style={styles.categoryHeader}>
+          <Text style={styles.sectionTitle}>
+            <Ionicons name="pricetag-outline" size={16} color={theme.text} /> Category
+          </Text>
+          <TouchableOpacity onPress={() => setIsCategoryModalVisible(true)}>
+            <Ionicons name="add-circle-outline" size={24} color={theme.primary} />
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.categoryGrid}>
-          {CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <TouchableOpacity
               key={category.id}
               style={[
                 styles.categoryButton,
-                selectedCategory === category.name && styles.categoryButtonActive,
+                selectedCategory === category.id && styles.categoryButtonActive,
               ]}
-              onPress={() => setSelectedCategory(category.name)}
+              onPress={() => setSelectedCategory(category.id)}
             >
               <Ionicons
                 name={category.icon}
                 size={20}
-                color={selectedCategory === category.name ? COLORS.white : COLORS.text}
+                color={selectedCategory === category.id ? theme.white : theme.text}
                 style={styles.categoryIcon}
               />
               <Text
                 style={[
                   styles.categoryButtonText,
-                  selectedCategory === category.name && styles.categoryButtonTextActive,
+                  selectedCategory === category.id && styles.categoryButtonTextActive,
                 ]}
               >
                 {category.name}
@@ -235,8 +237,8 @@ const CreateScreen = () => {
         {/* ACCOUNT SELECTOR */}
         {accountsLoading ? (
           <View style={[styles.loadingContainer, { marginTop: 20 }]}>
-            <ActivityIndicator size="small" color={COLORS.primary} />
-            <Text style={{ color: COLORS.textLight, marginTop: 5 }}>Loading accounts...</Text>
+            <ActivityIndicator size="small" color={theme.primary} />
+            <Text style={{ color: theme.textLight, marginTop: 5 }}>Loading accounts...</Text>
           </View>
         ) : accountsError ? (
           <View style={[styles.errorContainer, { marginTop: 20 }]}>
@@ -255,7 +257,7 @@ const CreateScreen = () => {
 
       {isLoading && (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
+          <ActivityIndicator size="large" color={theme.primary} />
         </View>
       )}
 
@@ -268,6 +270,12 @@ const CreateScreen = () => {
           setSelectedAccount(accountId);
           setIsAccountModalVisible(false);
         }}
+      />
+
+      <AddCategoryModal
+        isVisible={isCategoryModalVisible}
+        onClose={() => setIsCategoryModalVisible(false)}
+        createCategory={createCategory}
       />
     </View>
   );

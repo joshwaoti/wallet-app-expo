@@ -23,7 +23,7 @@
  * @property {string} accountId - ID of the account
  * @property {string} title - Title of the transaction
  * @property {number} amount - Transaction amount
- * @property {string} category - Transaction category
+ * @property {number} category_id - Transaction category ID
  * @property {string} type - Transaction type (DEBIT/CREDIT)
  * @property {string} currency - Currency code
  * @property {string} merchant - Merchant name

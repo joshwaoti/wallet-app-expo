@@ -129,8 +129,8 @@ export const validateTransactionData = (data) => {
     errors.push('Amount must be a positive number');
   }
 
-  if (typeof data.category !== 'string' || !data.category.trim()) {
-    errors.push('Category is required and must be a non-empty string');
+  if (typeof data.category_id !== 'number') {
+    errors.push('Category ID is required and must be a number');
   }
 
   if (!(data.date instanceof Date) && !isValidDateString(data.date)) {

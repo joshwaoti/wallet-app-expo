@@ -3,10 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, TextInput } from "reac
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import * as ImagePicker from 'expo-image-picker';
 
 export default function ProfileScreen() {
+  const { theme } = useTheme();
+  const styles = getProfileStyles(theme);
   const { user } = useUser();
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
@@ -101,7 +103,7 @@ export default function ProfileScreen() {
             style={styles.editButton} 
             onPress={() => setIsEditing(true)}
           >
-            <Ionicons name="create-outline" size={24} color={COLORS.primary} />
+            <Ionicons name="create-outline" size={24} color={theme.primary} />
           </TouchableOpacity>
         ) : (
           <View style={styles.editButtons}>
@@ -138,12 +140,12 @@ export default function ProfileScreen() {
             <></>
           ) : (
             <View style={styles.placeholderAvatar}>
-              <Ionicons name="person-outline" size={48} color={COLORS.textLight} />
+              <Ionicons name="person-outline" size={48} color={theme.textLight} />
             </View>
           )}
           
           <View style={styles.cameraIconContainer}>
-            <Ionicons name="camera-outline" size={20} color={COLORS.white} />
+            <Ionicons name="camera-outline" size={20} color={theme.white} />
           </View>
         </TouchableOpacity>
         
@@ -218,10 +220,10 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const getProfileStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   header: {
     flexDirection: "row",
@@ -229,12 +231,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: theme.border,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   editButton: {
     padding: 10,
@@ -249,24 +251,24 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   cancelButton: {
-    backgroundColor: COLORS.border,
+    backgroundColor: theme.border,
   },
   cancelButtonText: {
-    color: COLORS.text,
+    color: theme.text,
     fontWeight: "600",
   },
   saveButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
   },
   saveButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontWeight: "600",
   },
   profileSection: {
     alignItems: "center",
     paddingVertical: 30,
     borderBottomWidth: 1,
-    borderBottomColor: COLORS.border,
+    borderBottomColor: theme.border,
   },
   avatarContainer: {
     position: "relative",
@@ -276,17 +278,17 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 50,
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
   },
   cameraIconContainer: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     borderRadius: 15,
     width: 30,
     height: 30,
@@ -297,18 +299,18 @@ const styles = StyleSheet.create({
     marginBottom: 15,
   },
   removePictureText: {
-    color: COLORS.expense,
+    color: theme.expense,
     textDecorationLine: "underline",
   },
   userName: {
     fontSize: 22,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 5,
   },
   userEmail: {
     fontSize: 16,
-    color: COLORS.textLight,
+    color: theme.textLight,
   },
   formSection: {
     padding: 20,
@@ -319,33 +321,33 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: "600",
-    color: COLORS.textLight,
+    color: theme.textLight,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     borderRadius: 10,
     padding: 15,
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   valueText: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     paddingVertical: 10,
   },
   infoSection: {
     marginTop: 20,
     paddingTop: 20,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: theme.border,
   },
   infoTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 15,
   },
   infoItem: {
@@ -355,11 +357,11 @@ const styles = StyleSheet.create({
   },
   infoLabel: {
     fontSize: 16,
-    color: COLORS.textLight,
+    color: theme.textLight,
   },
   infoValue: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     fontWeight: "500",
   },
 });

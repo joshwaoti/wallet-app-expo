@@ -2,197 +2,17 @@ import React, { useState, useEffect, useCallback } from "react";
 import { View, Text, StyleSheet, ActivityIndicator, TouchableOpacity, ScrollView, Dimensions, RefreshControl } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
-import { COLORS } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { BlurView } from "expo-blur";
-import Svg, { Rect, G, Text as SvgText, Defs, LinearGradient, Stop, Path, Circle } from "react-native-svg";
+import CategoryBarChart from "@/components/CategoryBarChart";
+import ExpenseLineGraph from "@/components/ExpenseLineGraph";
+import CategoryPieChart from "@/components/CategoryPieChart";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
-const { width } = Dimensions.get("window");
-
-const CategoryBarChart = ({ data }) => {
-  if (!data || data.length === 0) {
-    return (
-      <View style={statsStyles.noDataContainer}>
-        <Text style={statsStyles.noDataText}>No spending data available for this period.</Text>
-      </View>
-    );
-  }
-
-  const maxAmount = Math.max(...data.map((item) => Math.abs(parseFloat(item.amount))));
-  const chartHeight = 150;
-  const barWidth = 30;
-  const spacing = 20;
-  const totalWidth = data.length * (barWidth + spacing);
-
-  return (
-    <View style={{ width: "100%", alignItems: "center" }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Svg height={chartHeight} width={Math.max(width - 40, totalWidth)} style={{ marginTop: 10 }}>
-          {/* Bars */}
-          {data.map((item, index) => {
-            const barHeight = (Math.abs(parseFloat(item.amount)) / maxAmount) * (chartHeight - 30); // 30 for text labels
-            const x = index * (barWidth + spacing) + spacing / 2;
-            const y = chartHeight - barHeight - 20; // 20 for category label
-
-            return (
-              <G key={item.category} x={x}>
-                <Rect
-                  y={y}
-                  width={barWidth}
-                  height={barHeight}
-                  fill={COLORS.primary}
-                  rx={5} // Rounded corners
-                  ry={5}
-                />
-                <SvgText
-                  x={barWidth / 2}
-                  y={y - 5}
-                  textAnchor="middle"
-                  fill={COLORS.text}
-                  fontSize="10"
-                  fontWeight="bold"
-                >
-                  {Math.abs(parseInt(item.amount)) // Display absolute integer amount
-                  }
-                </SvgText>
-                <SvgText
-                  x={barWidth / 2}
-                  y={chartHeight - 5}
-                  textAnchor="middle"
-                  fill={COLORS.textLight}
-                  fontSize="10"
-                  rotation="-45"
-                  origin={`${barWidth / 2},${chartHeight - 5}`}
-                >
-                  {item.category}
-                </SvgText>
-              </G>
-            );
-          })}
-        </Svg>
-      </ScrollView>
-    </View>
-  );
-};
-
-const ExpenseLineGraph = ({ data }) => {
-  if (!data || data.length === 0) {
-    return (
-      <View style={statsStyles.noDataContainer}>
-        <Text style={statsStyles.noDataText}>No expense history available for this period.</Text>
-      </View>
-    );
-  }
-
-  const allExpenses = data.map(item => Math.abs(parseFloat(item.expenses)));
-  const maxExpense = Math.max(...allExpenses);
-  const minExpense = Math.min(...allExpenses);
-
-  const chartWidth = Math.max(width - 40, data.length * 50); // Minimum width or based on data points
-  const chartHeight = 120;
-  const padding = 20;
-
-  if (data.length === 1) {
-    const x = chartWidth / 2;
-    const y = chartHeight - padding - ((Math.abs(parseFloat(data[0].expenses)) - minExpense) / (maxExpense - minExpense || 1)) * (chartHeight - padding * 2);
-    return (
-      <View style={{ width: "100%", alignItems: "center" }}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <Svg width={chartWidth} height={chartHeight}>
-            <Circle
-              cx={x}
-              cy={y}
-              r="6"
-              fill={COLORS.expense}
-              stroke={COLORS.white}
-              strokeWidth="2"
-            />
-            <SvgText
-              x={x}
-              y={y - 10} // Position text above the circle
-              textAnchor="middle"
-              fill={COLORS.text}
-              fontSize="12"
-              fontWeight="bold"
-            >
-              {`$${Math.abs(parseFloat(data[0].expenses)).toFixed(2)}`}
-            </SvgText>
-            <SvgText
-              x={x}
-              y={y + 15} // Position text below the circle
-              textAnchor="middle"
-              fill={COLORS.textLight}
-              fontSize="10"
-            >
-              {data[0].date}
-            </SvgText>
-          </Svg>
-        </ScrollView>
-      </View>
-    );
-  }
-
-  const points = data.map((item, index) => {
-    const x = (index / (data.length - 1)) * (chartWidth - padding * 2) + padding;
-    const y = chartHeight - padding - ((Math.abs(parseFloat(item.expenses)) - minExpense) / (maxExpense - minExpense || 1)) * (chartHeight - padding * 2);
-    return `${x},${y}`;
-  }).join(" ");
-
-  const pathData = `M${points.split(" ")[0]} C${points.substring(points.split(" ")[0].length)}`;
-
-  return (
-    <View style={{ width: "100%", alignItems: "center" }}>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <Svg width={chartWidth} height={chartHeight}>
-          <Defs>
-            <LinearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <Stop offset="0%" stopColor={COLORS.expense} stopOpacity="0.8" />
-              <Stop offset="100%" stopColor={COLORS.primary} stopOpacity="0.8" />
-            </LinearGradient>
-          </Defs>
-          {/* Line */}
-          <Path
-            d={pathData}
-            fill="none"
-            stroke="url(#gradient)"
-            strokeWidth="3"
-          />
-          {/* Points and Labels */}
-          {data.map((item, index) => {
-            const x = (index / (data.length - 1)) * (chartWidth - padding * 2) + padding;
-            const y = chartHeight - padding - ((Math.abs(parseFloat(item.expenses)) - minExpense) / (maxExpense - minExpense || 1)) * (chartHeight - padding * 2);
-            return (
-              <G key={index} x={x} y={y}>
-                <Circle r="4" fill={COLORS.expense} stroke={COLORS.white} strokeWidth="1" />
-                <SvgText
-                  x="0"
-                  y="-10"
-                  textAnchor="middle"
-                  fill={COLORS.text}
-                  fontSize="10"
-                  fontWeight="bold"
-                >
-                  {`$${Math.abs(parseFloat(item.expenses)).toFixed(0)}`}
-                </SvgText>
-                <SvgText
-                  x="0"
-                  y="15"
-                  textAnchor="middle"
-                  fill={COLORS.textLight}
-                  fontSize="8"
-                >
-                  {item.date}
-                </SvgText>
-              </G>
-            );
-          })}
-        </Svg>
-      </ScrollView>
-    </View>
-  );
-};
 
 export default function StatisticsScreen() {
+  const { theme } = useTheme();
+  const statsStyles = getStatsStyles(theme);
   const { user } = useUser();
   const [statisticsData, setStatisticsData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -205,7 +25,7 @@ export default function StatisticsScreen() {
     if (!refreshing) setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${API_URL}/statistics/${user.id}?period=${selectedPeriod}`); // Updated route and using fetch
+      const response = await fetch(`${API_URL}/statistics/${user.id}?period=${selectedPeriod}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -228,6 +48,9 @@ export default function StatisticsScreen() {
     setRefreshing(true);
     await fetchStatistics();
   }, [fetchStatistics]);
+
+  const topCategory = statisticsData?.spendingByCategory?.[0]?.category_name;
+  const dailyAverage = statisticsData?.totalExpenses / 30; // Assuming a 30-day month for simplicity
 
   return (
     <SafeAreaView style={statsStyles.container}>
@@ -261,8 +84,8 @@ export default function StatisticsScreen() {
 
         {loading ? (
           <View style={statsStyles.loadingContainer}>
-            <ActivityIndicator size="large" color={COLORS.primary} />
-            <Text style={{ color: COLORS.textLight, marginTop: 10 }}>Loading statistics...</Text>
+            <ActivityIndicator size="large" color={theme.primary} />
+            <Text style={{ color: theme.textLight, marginTop: 10 }}>Loading statistics...</Text>
           </View>
         ) : error ? (
           <View style={statsStyles.errorContainer}>
@@ -275,16 +98,31 @@ export default function StatisticsScreen() {
           <>
             <BlurView intensity={20} tint="light" style={statsStyles.summaryCard}>
               <Text style={statsStyles.summaryTitle}>Total Income</Text>
-              <Text style={[statsStyles.summaryAmount, { color: COLORS.income }]}>${statisticsData.totalIncome}</Text>
+              <Text style={[statsStyles.summaryAmount, { color: theme.income }]}>${statisticsData.totalIncome}</Text>
             </BlurView>
 
             <BlurView intensity={20} tint="light" style={statsStyles.summaryCard}>
               <Text style={statsStyles.summaryTitle}>Total Expenses</Text>
-              <Text style={[statsStyles.summaryAmount, { color: COLORS.expense }]}>${Math.abs(parseFloat(statisticsData.totalExpenses)).toFixed(2)}</Text>
+              <Text style={[statsStyles.summaryAmount, { color: theme.expense }]}>${Math.abs(parseFloat(statisticsData.totalExpenses)).toFixed(2)}</Text>
+            </BlurView>
+
+            <BlurView intensity={20} tint="light" style={statsStyles.summaryCard}>
+              <Text style={statsStyles.summaryTitle}>Top Spending Category</Text>
+              <Text style={statsStyles.summaryAmount}>{topCategory || "N/A"}</Text>
+            </BlurView>
+
+            <BlurView intensity={20} tint="light" style={statsStyles.summaryCard}>
+              <Text style={statsStyles.summaryTitle}>Daily Average Spending</Text>
+              <Text style={statsStyles.summaryAmount}>${Math.abs(dailyAverage).toFixed(2)}</Text>
             </BlurView>
 
             <BlurView intensity={20} tint="light" style={statsStyles.chartCard}>
               <Text style={statsStyles.chartTitle}>Spending by Category</Text>
+              <CategoryPieChart data={statisticsData.spendingByCategory} />
+            </BlurView>
+
+            <BlurView intensity={20} tint="light" style={statsStyles.chartCard}>
+              <Text style={statsStyles.chartTitle}>Spending by Category (Bar)</Text>
               <CategoryBarChart data={statisticsData.spendingByCategory} />
             </BlurView>
 
@@ -299,10 +137,10 @@ export default function StatisticsScreen() {
   );
 }
 
-const statsStyles = StyleSheet.create({
+const getStatsStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   scrollViewContent: {
     padding: 20,
@@ -317,14 +155,14 @@ const statsStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 28,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   periodSelector: {
     flexDirection: "row",
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 20,
     padding: 5,
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -336,14 +174,14 @@ const statsStyles = StyleSheet.create({
     borderRadius: 15,
   },
   periodButtonActive: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
   },
   periodButtonText: {
-    color: COLORS.textLight,
+    color: theme.textLight,
     fontWeight: "600",
   },
   periodButtonTextActive: {
-    color: COLORS.white,
+    color: theme.white,
   },
   summaryCard: {
     backgroundColor: "rgba(255,255,255,0.6)",
@@ -357,7 +195,7 @@ const statsStyles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    color: COLORS.textLight,
+    color: theme.textLight,
     marginBottom: 5,
   },
   summaryAmount: {
@@ -372,11 +210,12 @@ const statsStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "rgba(255,255,255,0.2)",
     overflow: "hidden",
+    minHeight: 250, // Increased height
   },
   chartTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 15,
   },
   loadingContainer: {
@@ -392,34 +231,20 @@ const statsStyles = StyleSheet.create({
     minHeight: 200,
   },
   errorText: {
-    color: COLORS.expense,
+    color: theme.expense,
     fontSize: 16,
     textAlign: "center",
     marginBottom: 20,
   },
   retryButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 10,
   },
   retryButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontSize: 16,
     fontWeight: "600",
-  },
-  noDataContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 150,
-    backgroundColor: COLORS.background,
-    borderRadius: 15,
-    marginTop: 10,
-  },
-  noDataText: {
-    color: COLORS.textLight,
-    fontSize: 16,
-    textAlign: "center",
-    paddingHorizontal: 20,
   },
 });

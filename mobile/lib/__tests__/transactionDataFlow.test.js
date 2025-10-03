@@ -54,7 +54,7 @@ describe('Transaction Data Flow Integration', () => {
     confidence: 0.9,
     smsId: 'sms-123',
     title: 'Groceries',
-    category: 'Food', // Assuming category is set by user in popup or inferred
+    category_id: 1, // Assuming category is set by user in popup or inferred
   };
 
   beforeEach(() => {

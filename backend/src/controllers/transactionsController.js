@@ -5,9 +5,10 @@ export async function getTransactionsByUserId(req, res) {
     const { userId } = req.params;
 
     const transactions = await sql`
-        SELECT t.*, a.name as account_name, a.type as account_type 
+        SELECT t.*, a.name as account_name, a.type as account_type, c.name as category_name, c.icon as category_icon
         FROM transactions t
         LEFT JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN categories c ON t.category_id = c.id
         WHERE t.user_id = ${userId} ORDER BY t.created_at DESC
       `;
 
@@ -20,17 +21,29 @@ export async function getTransactionsByUserId(req, res) {
 
 export async function createTransaction(req, res) {
   try {
-    const { title, amount, category, account_id, user_id, source = 'manual', sms_id = null, confidence = null } = req.body;
+    const { title, amount, category_id, account_id, user_id, source = 'manual', sms_id = null, confidence = null } = req.body;
 
-    if (!title || !user_id || !category || amount === undefined || !account_id) {
-      return res.status(400).json({ message: "All required fields (title, user_id, category, amount, account_id) are required" });
+    if (!title.trim()) {
+      return res.status(400).json({ message: "Please enter a transaction title" });
+    }
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      return res.status(400).json({ message: "Please enter a valid amount" });
+    }
+    if (!category_id) {
+      return res.status(400).json({ message: "Please select a category" });
+    }
+    if (!account_id) {
+      return res.status(400).json({ message: "Please select an account" });
+    }
+    if (!user_id) {
+      return res.status(400).json({ message: "User ID is required" });
     }
 
     if (typeof amount !== 'number') {
       return res.status(400).json({ message: "Amount must be a number" });
     }
 
-    if (amount <= 0 && source !== 'manual') { // Allow 0 or negative for manual adjustments if needed, but not for SMS
+    if (amount <= 0 && source !== 'manual') {
       return res.status(400).json({ message: "Amount must be positive for SMS-detected transactions" });
     }
 
@@ -46,8 +59,8 @@ export async function createTransaction(req, res) {
     await sql`BEGIN`;
 
     const transaction = await sql`
-      INSERT INTO transactions(user_id, title, amount, category, account_id, source, sms_id, confidence)
-      VALUES (${user_id}, ${title}, ${amount}, ${category}, ${account_id}, ${source}, ${sms_id}, ${confidence})
+      INSERT INTO transactions(user_id, title, amount, category_id, account_id, source, sms_id, confidence)
+      VALUES (${user_id}, ${title}, ${amount}, ${category_id}, ${account_id}, ${source}, ${sms_id}, ${confidence})
       RETURNING *
     `;
 
@@ -126,10 +139,11 @@ export async function exportTransactionsCsv(req, res) {
     const { userId } = req.params;
 
     const transactions = await sql`
-      SELECT id, user_id, title, amount, category, created_at, account_id
-      FROM transactions
-      WHERE user_id = ${userId}
-      ORDER BY created_at DESC
+      SELECT t.id, t.user_id, t.title, t.amount, t.category_id, t.created_at, t.account_id
+      FROM transactions t
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.user_id = ${userId}
+      ORDER BY t.created_at DESC
     `;
 
     if (transactions.length === 0) {

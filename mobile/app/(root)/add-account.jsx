@@ -3,13 +3,15 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator,
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "@clerk/clerk-expo";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "@/constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { router, useLocalSearchParams } from "expo-router";
 import { Picker } from "@react-native-picker/picker";
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export default function AddAccountScreen() {
+  const { theme } = useTheme();
+  const addAccountStyles = getAddAccountStyles(theme);
   const { user } = useUser();
   const params = useLocalSearchParams();
   const isEditing = !!params.accountId;
@@ -134,12 +136,12 @@ export default function AddAccountScreen() {
     <SafeAreaView style={addAccountStyles.container}>
       <View style={addAccountStyles.header}>
         <TouchableOpacity onPress={() => router.back()} style={addAccountStyles.backButton}>
-          <Ionicons name="arrow-back" size={24} color={COLORS.text} />
+          <Ionicons name="arrow-back" size={24} color={theme.text} />
         </TouchableOpacity>
         <Text style={addAccountStyles.headerTitle}>{isEditing ? "Edit Account" : "Add New Account"}</Text>
         {isEditing && (
           <TouchableOpacity onPress={handleDeleteAccount} style={addAccountStyles.deleteButton}>
-            <Ionicons name="trash-outline" size={24} color={COLORS.expense} />
+            <Ionicons name="trash-outline" size={24} color={theme.expense} />
           </TouchableOpacity>
         )}
         {!isEditing && <View style={{ width: 24 }} />}
@@ -150,7 +152,7 @@ export default function AddAccountScreen() {
         <TextInput
           style={addAccountStyles.input}
           placeholder="e.g., My Checking Account"
-          placeholderTextColor={COLORS.textLight}
+          placeholderTextColor={theme.textLight}
           value={name}
           onChangeText={setName}
         />
@@ -178,7 +180,7 @@ export default function AddAccountScreen() {
         <TextInput
           style={addAccountStyles.input}
           placeholder="0.00"
-          placeholderTextColor={COLORS.textLight}
+          placeholderTextColor={theme.textLight}
           keyboardType="numeric"
           value={balance}
           onChangeText={setBalance}
@@ -191,7 +193,7 @@ export default function AddAccountScreen() {
         disabled={loading}
       >
         {loading ? (
-          <ActivityIndicator color={COLORS.white} />
+          <ActivityIndicator color={theme.white} />
         ) : (
           <Text style={addAccountStyles.saveButtonText}>{isEditing ? "Update Account" : "Create Account"}</Text>
         )}
@@ -200,10 +202,10 @@ export default function AddAccountScreen() {
   );
 }
 
-const addAccountStyles = StyleSheet.create({
+const getAddAccountStyles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
     padding: 20,
   },
   header: {
@@ -218,7 +220,7 @@ const addAccountStyles = StyleSheet.create({
   headerTitle: {
     fontSize: 24,
     fontWeight: "bold",
-    color: COLORS.text,
+    color: theme.text,
   },
   deleteButton: {
     padding: 5,
@@ -229,30 +231,30 @@ const addAccountStyles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: COLORS.text,
+    color: theme.text,
     marginBottom: 8,
   },
   input: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     padding: 15,
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   pickerContainer: {
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     overflow: "hidden",
-    shadowColor: COLORS.shadow,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -261,26 +263,26 @@ const addAccountStyles = StyleSheet.create({
   picker: {
     height: 50,
     width: "100%",
-    color: COLORS.text,
+    color: theme.text,
   },
   pickerItem: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   saveButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     padding: 18,
     borderRadius: 15,
     alignItems: "center",
     marginTop: 30,
-    shadowColor: COLORS.primary,
+    shadowColor: theme.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 5,
     elevation: 5,
   },
   saveButtonText: {
-    color: COLORS.white,
+    color: theme.white,
     fontSize: 18,
     fontWeight: "700",
   },

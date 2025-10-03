@@ -12,7 +12,7 @@ export const createTransaction = async (transactionData, userId, accountId) => {
         account_id: accountId,
         title: transactionData.title,
         amount: transactionData.amount,
-        category: transactionData.category,
+        category_id: transactionData.category_id,
         source: transactionData.source || 'sms', // Default to sms if not provided
         sms_id: transactionData.smsId || null,
         confidence: transactionData.confidence || null,

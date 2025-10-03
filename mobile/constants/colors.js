@@ -57,6 +57,3 @@ export const THEMES = {
   purple: purpleTheme,
   ocean: oceanTheme,
 };
-
-// 👇 change this to switch theme
-export const COLORS = THEMES.coffee;

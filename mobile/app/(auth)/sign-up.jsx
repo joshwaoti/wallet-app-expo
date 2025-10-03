@@ -2,14 +2,16 @@ import { useState } from "react";
 import { Text, TextInput, TouchableOpacity, View, Alert } from "react-native";
 import { useSignUp } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { styles } from "@/assets/styles/auth.styles.js";
+import { getAuthStyles } from "@/assets/styles/auth.styles.js";
 import { Ionicons } from "@expo/vector-icons";
-import { COLORS } from "../../constants/colors";
+import { useTheme } from "@/hooks/useTheme";
 import { Image } from "expo-image";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { permissionManager } from "../../lib/permissionManager"; // Import permissionManager
 
 export default function SignUpScreen() {
+  const { theme } = useTheme();
+  const styles = getAuthStyles(theme);
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
 
@@ -91,10 +93,10 @@ export default function SignUpScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={20} color={COLORS.expense} />
+            <Ionicons name="alert-circle" size={20} color={theme.expense} />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity onPress={() => setError("")}>
-              <Ionicons name="close" size={20} color={COLORS.textLight} />
+              <Ionicons name="close" size={20} color={theme.textLight} />
             </TouchableOpacity>
           </View>
         ) : null}
@@ -128,10 +130,10 @@ export default function SignUpScreen() {
 
         {error ? (
           <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={20} color={COLORS.expense} />
+            <Ionicons name="alert-circle" size={20} color={theme.expense} />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity onPress={() => setError("")}>
-              <Ionicons name="close" size={20} color={COLORS.textLight} />
+              <Ionicons name="close" size={20} color={theme.textLight} />
             </TouchableOpacity>
           </View>
         ) : null}

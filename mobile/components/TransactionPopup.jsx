@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Modal, Animated, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
+import { useCategories } from '../../hooks/useCategories';
+import { useTheme } from '@/hooks/useTheme';
 
 const { height } = Dimensions.get('window');
 
@@ -11,14 +13,15 @@ const TransactionPopup = ({
   transaction,
   onAddTransaction,
   onDismiss,
-  categories = ['Shopping', 'Bills', 'Entertainment', 'Food', 'Transport', 'Health'],
   userId,
   accountId,
   onViewDetails, // Destructure new prop
   onReportIncorrectExtraction,
 }) => {
+  const { theme } = useTheme();
+  const { categories } = useCategories();
   const [editedTitle, setEditedTitle] = useState(transaction.title || '');
-  const [selectedCategory, setSelectedCategory] = useState(transaction.category || categories[0]); // Default or inferred category
+  const [selectedCategory, setSelectedCategory] = useState(transaction.category_id || (categories.length > 0 ? categories[0].id : '')); // Default or inferred category
   const slideAnim = useState(new Animated.Value(height))[0]; // Initial position off-screen
 
   useEffect(() => {
@@ -41,7 +44,7 @@ const TransactionPopup = ({
     const finalTransaction = {
       ...transaction,
       title: editedTitle,
-      category: selectedCategory,
+      category_id: selectedCategory,
       // Ensure all required fields are present, even if they are optional from extractor
       id: transaction.id || `temp-id-${Date.now()}`,
       messageId: transaction.messageId || `temp-message-id-${Date.now()}`,
@@ -104,18 +107,18 @@ const TransactionPopup = ({
                 <View style={styles.categoryContainer}>
                   {categories.map((category) => (
                     <TouchableOpacity
-                      key={category}
+                      key={category.id}
                       style={[
                         styles.categoryButton,
-                        selectedCategory === category && styles.selectedCategoryButton,
+                        selectedCategory === category.id && styles.selectedCategoryButton,
                       ]}
-                      onPress={() => setSelectedCategory(category)}
+                      onPress={() => setSelectedCategory(category.id)}
                     >
                       <Text style={[
                         styles.categoryButtonText,
-                        selectedCategory === category && styles.selectedCategoryButtonText,
+                        selectedCategory === category.id && styles.selectedCategoryButtonText,
                       ]}>
-                        {category}
+                        {category.name}
                       </Text>
                     </TouchableOpacity>
                   ))}

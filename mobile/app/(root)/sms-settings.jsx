@@ -5,10 +5,12 @@ import { getSMSSettings, setSMSSettings } from '../../lib/storage';
 import { smsMonitorService } from '../../lib/SMSMonitorService';
 import PageLoader from '../../components/PageLoader';
 import Slider from '@react-native-community/slider'; // Import Slider
-import { COLORS } from '@/constants/colors';
+import { useTheme } from '@/hooks/useTheme';
 import { Ionicons } from '@expo/vector-icons';
 
-const SMSSettingsScreen = () => {
+export default function SMSSettingsScreen() {
+  const { theme } = useTheme();
+  const styles = getStyles(theme);
   const [settings, setSettings] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [newSender, setNewSender] = useState('');
@@ -118,13 +120,13 @@ const SMSSettingsScreen = () => {
 
         <View style={styles.settingItem}>
           <View style={styles.settingLeft}>
-            <Ionicons name="phone-portrait-outline" size={24} color={COLORS.primary} />
+            <Ionicons name="phone-portrait-outline" size={24} color={theme.primary} />
             <Text style={styles.settingLabel}>Enable SMS Monitoring</Text>
           </View>
           <Switch
-            trackColor={{ false: COLORS.border, true: COLORS.primary }}
-            thumbColor={settings?.enabled ? COLORS.white : COLORS.white}
-            ios_backgroundColor={COLORS.border}
+            trackColor={{ false: theme.border, true: theme.primary }}
+            thumbColor={settings?.enabled ? theme.white : theme.white}
+            ios_backgroundColor={theme.border}
             onValueChange={handleToggleSMSMonitoring}
             value={settings?.enabled || false}
           />
@@ -143,7 +145,7 @@ const SMSSettingsScreen = () => {
                 autoCapitalize="none"
               />
               <TouchableOpacity style={styles.addButton} onPress={handleAddSender}>
-                <Ionicons name="add-outline" size={24} color={COLORS.white} />
+                <Ionicons name="add-outline" size={24} color={theme.white} />
               </TouchableOpacity>
             </View>
           </View>
@@ -157,7 +159,7 @@ const SMSSettingsScreen = () => {
               <View style={styles.senderItem}>
                 <Text style={styles.senderText}>{item}</Text>
                 <TouchableOpacity onPress={() => handleRemoveSender(item)} style={styles.removeButton}>
-                  <Ionicons name="trash-outline" size={20} color={COLORS.white} />
+                  <Ionicons name="trash-outline" size={20} color={theme.white} />
                 </TouchableOpacity>
               </View>
             )}
@@ -177,9 +179,9 @@ const SMSSettingsScreen = () => {
               step={1}
               value={settings?.popupDuration || 30}
               onValueChange={handlePopupDurationChange}
-              minimumTrackTintColor={COLORS.primary}
-              maximumTrackTintColor={COLORS.border}
-              thumbTintColor={COLORS.primary}
+              minimumTrackTintColor={theme.primary}
+              maximumTrackTintColor={theme.border}
+              thumbTintColor={theme.primary}
             />
           </View>
         )}
@@ -195,9 +197,9 @@ const SMSSettingsScreen = () => {
               step={100}
               value={settings?.minimumAmount || 0}
               onValueChange={handleMinimumAmountChange}
-              minimumTrackTintColor={COLORS.primary}
-              maximumTrackTintColor={COLORS.border}
-              thumbTintColor={COLORS.primary}
+              minimumTrackTintColor={theme.primary}
+              maximumTrackTintColor={theme.border}
+              thumbTintColor={theme.primary}
             />
           </View>
         )}
@@ -205,13 +207,13 @@ const SMSSettingsScreen = () => {
         {settings?.enabled && (
           <View style={styles.settingItem}>
             <View style={styles.settingLeft}>
-              <Ionicons name="layers-outline" size={24} color={COLORS.primary} />
+              <Ionicons name="layers-outline" size={24} color={theme.primary} />
               <Text style={styles.settingLabel}>Use Overlay Popups</Text>
             </View>
             <Switch
-              trackColor={{ false: COLORS.border, true: COLORS.primary }}
-              thumbColor={settings?.useOverlay ? COLORS.white : COLORS.white}
-              ios_backgroundColor={COLORS.border}
+              trackColor={{ false: theme.border, true: theme.primary }}
+              thumbColor={settings?.useOverlay ? theme.white : theme.white}
+              ios_backgroundColor={theme.border}
               onValueChange={handleToggleUseOverlay}
               value={settings?.useOverlay || false}
             />
@@ -220,12 +222,12 @@ const SMSSettingsScreen = () => {
       </View>
     </SafeAreaView>
   );
-};
+}
 
-const styles = StyleSheet.create({
+const getStyles = (theme) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: theme.background,
   },
   container: {
     padding: 20,
@@ -234,20 +236,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: COLORS.text,
+    color: theme.text,
     textAlign: 'center',
   },
   settingItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     padding: 15,
     borderRadius: 15,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: COLORS.border,
-    shadowColor: COLORS.shadow,
+    borderColor: theme.border,
+    shadowColor: theme.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -260,7 +262,7 @@ const styles = StyleSheet.create({
   },
   settingLabel: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   section: {
     marginTop: 20,
@@ -270,7 +272,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 10,
-    color: COLORS.text,
+    color: theme.text,
   },
   trustedSendersContainer: {
     flexDirection: 'row',
@@ -278,17 +280,17 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     padding: 10,
     borderRadius: 10,
     marginRight: 10,
     fontSize: 16,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     borderWidth: 1,
-    color: COLORS.text,
+    color: theme.text,
   },
   addButton: {
-    backgroundColor: COLORS.primary,
+    backgroundColor: theme.primary,
     padding: 10,
     borderRadius: 10,
     justifyContent: 'center',
@@ -299,19 +301,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: COLORS.card,
+    backgroundColor: theme.card,
     padding: 15,
     borderRadius: 10,
     marginBottom: 10,
-    borderColor: COLORS.border,
+    borderColor: theme.border,
     borderWidth: 1,
   },
   senderText: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
   },
   removeButton: {
-    backgroundColor: COLORS.expense,
+    backgroundColor: theme.expense,
     padding: 10,
     borderRadius: 8,
     justifyContent: 'center',
@@ -319,7 +321,7 @@ const styles = StyleSheet.create({
   },
   emptyListText: {
     textAlign: 'center',
-    color: COLORS.textLight,
+    color: theme.textLight,
     marginTop: 10,
     fontStyle: 'italic',
   },
@@ -329,10 +331,8 @@ const styles = StyleSheet.create({
   },
   sliderValueText: {
     fontSize: 16,
-    color: COLORS.text,
+    color: theme.text,
     textAlign: 'center',
     marginBottom: 10,
   },
 });
-
-export default SMSSettingsScreen;
