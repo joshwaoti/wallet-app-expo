@@ -3,14 +3,26 @@ import { sql } from "../config/db.js";
 export async function getTransactionsByUserId(req, res) {
   try {
     const { userId } = req.params;
+    const { limit, offset } = req.query; // Add limit and offset from query parameters
 
-    const transactions = await sql`
-        SELECT t.*, a.name as account_name, a.type as account_type, c.name as category_name, c.icon as category_icon
-        FROM transactions t
-        LEFT JOIN accounts a ON t.account_id = a.id
-        LEFT JOIN categories c ON t.category_id = c.id
-        WHERE t.user_id = ${userId} ORDER BY t.created_at DESC
-      `;
+    let baseQuery = sql`
+      SELECT t.*, a.name as account_name, a.type as account_type, c.name as category_name, c.icon as category_icon
+      FROM transactions t
+      LEFT JOIN accounts a ON t.account_id = a.id
+      LEFT JOIN categories c ON t.category_id = c.id
+      WHERE t.user_id = ${userId}
+      ORDER BY t.created_at DESC
+    `;
+
+    // Conditionally add LIMIT and OFFSET using sql.raw for keywords and passing values as parameters
+    if (limit) {
+      baseQuery = sql`${baseQuery} LIMIT ${limit}`;
+    }
+    if (offset) {
+      baseQuery = sql`${baseQuery} OFFSET ${offset}`;
+    }
+
+    const transactions = await baseQuery;
 
     res.status(200).json(transactions);
   } catch (error) {

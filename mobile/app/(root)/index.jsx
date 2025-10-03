@@ -1,6 +1,6 @@
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import { Link, useRouter } from "expo-router";
-import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import { Alert, FlatList, Image, RefreshControl, Text, TouchableOpacity, View, ActivityIndicator } from "react-native";
 import { SignOutButton } from "@/components/SignOutButton";
 import { useTransactions } from "../../hooks/useTransactions";
 import { useEffect, useState } from "react";
@@ -24,13 +24,13 @@ export default function Page() {
   const [isSmsMonitoringEnabled, setIsSmsMonitoringEnabled] = useState(false);
   const [smsPermissionGranted, setSmsPermissionGranted] = useState(false);
 
-  const { transactions, summary, isLoading, loadData, deleteTransaction } = useTransactions(
+  const { transactions, summary, isLoading, loadData, deleteTransaction, loadMoreTransactions, hasMore, isFetchingMore } = useTransactions(
     user.id
   );
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadData();
+    await loadData(true); // Pass true to indicate a refresh
     await updateSmsStatus();
     setRefreshing(false);
   };
@@ -44,7 +44,7 @@ export default function Page() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(true); // Initial load also acts as a refresh
     updateSmsStatus();
     // Add listener for permission changes to update UI
     const listener = (state) => {
@@ -64,7 +64,7 @@ export default function Page() {
     ]);
   };
 
-  if (isLoading && !refreshing) return <PageLoader />;
+  if (isLoading && !refreshing && transactions.length === 0) return <PageLoader />;
 
   return (
     <View style={styles.container}>
@@ -116,7 +116,10 @@ export default function Page() {
         renderItem={({ item }) => <TransactionItem item={item} onDelete={handleDelete} />}
         ListEmptyComponent={<NoTransactionsFound />}
         showsVerticalScrollIndicator={false}
+        onEndReached={loadMoreTransactions}
+        onEndReachedThreshold={0.5}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        ListFooterComponent={isFetchingMore ? <ActivityIndicator size="small" color={theme.primary} /> : null}
       />
     </View>
   );

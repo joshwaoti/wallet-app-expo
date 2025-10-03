@@ -20,7 +20,8 @@
       "permissions": [
         "READ_SMS",
         "SYSTEM_ALERT_WINDOW"
-      ]
+      ],
+      "package": "com.walletapp.mobile"
     },
     "web": {
       "bundler": "metro",
@@ -43,7 +44,11 @@
       "typedRoutes": true
     },
     "extra": {
-      "EXPO_PUBLIC_API_URL": "https://wallet-api-gzef.onrender.com/api"
+      "EXPO_PUBLIC_API_URL": "https://wallet-api-gzef.onrender.com/api",
+      "router": {},
+      "eas": {
+        "projectId": "cea148e8-a2bb-44ed-ad6f-9f12673be32b"
+      }
     }
   }
 }

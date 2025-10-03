@@ -3,14 +3,24 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export function useCategories() {
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   async function fetchCategories() {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch(`${API_URL}/categories`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setCategories(data);
-    } catch (error) {
-      console.log('Error fetching categories', error);
+    } catch (err) {
+      console.error('Error fetching categories:', err);
+      setError('Failed to load categories.');
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -23,11 +33,16 @@ export function useCategories() {
         },
         body: JSON.stringify({ name, icon }),
       });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
       const data = await response.json();
       setCategories([...categories, data]);
       return data;
-    } catch (error) {
-      console.log('Error creating category', error);
+    } catch (err) {
+      console.error('Error creating category:', err);
+      // Optionally set an error state here if needed for create operations
+      return null; // Indicate failure
     }
   }
 
@@ -35,5 +50,5 @@ export function useCategories() {
     fetchCategories();
   }, []);
 
-  return { categories, createCategory };
+  return { categories, createCategory, isLoading, error };
 }

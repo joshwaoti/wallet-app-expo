@@ -44,7 +44,7 @@ const BudgetCategoryIcon = ({ icon }) => {
 const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
   const { theme } = useTheme();
   const budgetStyles = getBudgetStyles(theme);
-  const { categories } = useCategories();
+  const { categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
   const [category, setCategory] = useState(budgetToEdit?.category_id || (categories.length > 0 ? categories[0].id : ""));
   const [amount, setAmount] = useState(budgetToEdit?.amount ? String(budgetToEdit.amount) : "");
 
@@ -53,9 +53,12 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
       setCategory(budgetToEdit.category_id);
       setAmount(String(budgetToEdit.amount));
     } else {
-      setCategory(categories.length > 0 ? categories[0].id : "");
+      // Only set initial category if categories are loaded and not in an error state
+      if (!categoriesLoading && !categoriesError && categories.length > 0) {
+        setCategory(categories[0].id);
+      }
     }
-  }, [isVisible, budgetToEdit, categories]);
+  }, [isVisible, budgetToEdit, categories, categoriesLoading, categoriesError]);
 
   const handleModalSave = async () => {
     if (!category || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
@@ -79,15 +82,23 @@ const BudgetAddEditModal = ({ isVisible, onClose, onSave, budgetToEdit }) => {
 
           <Text style={budgetStyles.label}>Category</Text>
           <View style={budgetStyles.pickerContainer}>
-            <Picker
-              selectedValue={category}
-              onValueChange={(itemValue) => setCategory(itemValue)}
-              style={budgetStyles.picker}
-            >
-              {categories.map((cat) => (
-                <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
-              ))}
-            </Picker>
+            {categoriesLoading ? (
+              <ActivityIndicator size="small" color={theme.primary} />
+            ) : categoriesError ? (
+              <Text style={{ color: theme.expense, textAlign: "center", paddingVertical: 15 }}>Error loading categories.</Text>
+            ) : categories && categories.length > 0 ? (
+              <Picker
+                selectedValue={category}
+                onValueChange={(itemValue) => setCategory(itemValue)}
+                style={budgetStyles.picker}
+              >
+                {categories.map((cat) => (
+                  <Picker.Item key={cat.id} label={cat.name} value={cat.id} />
+                ))}
+              </Picker>
+            ) : (
+              <Text style={{ color: theme.textLight, textAlign: "center", paddingVertical: 15 }}>No categories available. Add one!</Text>
+            )}
           </View>
 
           <Text style={budgetStyles.label}>Budget Amount</Text>

@@ -36,7 +36,7 @@ const CreateScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [accountsLoading, setAccountsLoading] = useState(true);
   const [accountsError, setAccountsError] = useState(null);
-  const { categories, createCategory } = useCategories();
+  const { categories, isLoading: categoriesLoading, error: categoriesError } = useCategories();
   const [isAccountModalVisible, setIsAccountModalVisible] = useState(false); // New state for modal visibility
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
 
@@ -66,14 +66,23 @@ const CreateScreen = () => {
 
   const handleCreate = async () => {
     // validations
-    if (!title.trim()) return Alert.alert("Error", "Please enter a transaction title");
+    if (!title.trim()) {
+      Alert.alert("Error", "Please enter a transaction title");
+      return;
+    }
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
       Alert.alert("Error", "Please enter a valid amount");
       return;
     }
 
-    if (!selectedCategory) return Alert.alert("Error", "Please select a category");
-    if (!selectedAccount) return Alert.alert("Error", "Please select an account");
+    if (!selectedCategory) {
+      Alert.alert("Error", "Please select a category");
+      return;
+    }
+    if (!selectedAccount) {
+      Alert.alert("Error", "Please select an account");
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -207,7 +216,16 @@ const CreateScreen = () => {
         </View>
 
         <View style={styles.categoryGrid}>
-          {categories.map((category) => (
+          {categoriesLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="small" color={theme.primary} />
+              <Text style={{ color: theme.textLight, marginTop: 5 }}>Loading categories...</Text>
+            </View>
+          ) : categoriesError ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>Error loading categories.</Text>
+            </View>
+          ) : categories && categories.length > 0 ? (categories.map((category) => (
             <TouchableOpacity
               key={category.id}
               style={[
@@ -231,7 +249,9 @@ const CreateScreen = () => {
                 {category.name}
               </Text>
             </TouchableOpacity>
-          ))}
+          ))) : (
+            <Text style={{ color: theme.textLight, textAlign: "center", flex: 1 }}>No categories available. Add one!</Text>
+          )}
         </View>
 
         {/* ACCOUNT SELECTOR */}

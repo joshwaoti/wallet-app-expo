@@ -23,8 +23,12 @@ export async function getStatistics(req, res) {
         startDate = new Date(now.getFullYear(), now.getMonth(), diff);
         endDate = new Date(now.getFullYear(), now.getMonth(), diff + 6);
         break;
-      default:
+      case "all": // Explicitly handle "all" period
         startDate = new Date(0); // Epoch, to get all data
+        endDate = now;
+        break;
+      default:
+        startDate = new Date(0); // Fallback to epoch, effectively "all"
         endDate = now;
     }
 
@@ -32,6 +36,7 @@ export async function getStatistics(req, res) {
     const formattedEndDate = endDate.toISOString().split('T')[0];
 
     // 1. Total income and total expenses within the date range
+    console.time('statistics:totalsResult');
     const totalsResult = await sql`
       SELECT 
         COALESCE(SUM(CASE WHEN amount > 0 THEN amount ELSE 0 END), 0) AS total_income,
@@ -39,9 +44,11 @@ export async function getStatistics(req, res) {
       FROM transactions
       WHERE user_id = ${userId} AND created_at >= ${formattedStartDate} AND created_at <= ${formattedEndDate};
     `;
+    console.timeEnd('statistics:totalsResult');
     const { total_income, total_expenses } = totalsResult[0];
 
     // 2. Spending broken down by category
+    console.time('statistics:spendingByCategory');
     const spendingByCategory = await sql`
       SELECT 
         c.name as category_name, 
@@ -55,8 +62,10 @@ export async function getStatistics(req, res) {
       GROUP BY c.name, c.icon
       ORDER BY amount_spent ASC;
     `;
+    console.timeEnd('statistics:spendingByCategory');
 
-    // 3. Time-series of expenses (daily or weekly totals for the line graph)
+    // 3. Time-series of expenses (daily or monthly totals for the line graph)
+    console.time('statistics:timeSeriesQuery');
     let timeSeriesQuery;
     if (period === "month" || period === "week") {
       // Daily totals for month/week
@@ -71,8 +80,8 @@ export async function getStatistics(req, res) {
         GROUP BY date
         ORDER BY date ASC;
       `;
-    } else {
-      // Monthly totals for year (or all time)
+    } else if (period === "year" || period === "all") {
+      // Monthly totals for year or all time
       timeSeriesQuery = await sql`
         SELECT 
           TO_CHAR(created_at, 'YYYY-MM') AS month,
@@ -84,7 +93,21 @@ export async function getStatistics(req, res) {
         GROUP BY month
         ORDER BY month ASC;
       `;
+    } else {
+        // Fallback for unexpected periods, monthly totals
+        timeSeriesQuery = await sql`
+        SELECT 
+          TO_CHAR(created_at, 'YYYY-MM') AS month,
+          COALESCE(SUM(amount), 0) AS monthly_expenses
+        FROM transactions
+        WHERE user_id = ${userId} 
+        AND amount < 0 
+        AND created_at >= ${formattedStartDate} AND created_at <= ${formattedEndDate}
+        GROUP BY month
+        ORDER BY month ASC;
+      `;
     }
+    console.timeEnd('statistics:timeSeriesQuery');
 
     res.status(200).json({
       totalIncome: parseFloat(total_income).toFixed(2),
